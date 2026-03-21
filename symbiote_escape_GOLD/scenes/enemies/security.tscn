@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://security_v4"]
+
+[ext_resource type="Script" path="res://scripts/entities/enemies/security_ai.gd" id="1"]
+
+[node name="Security" type="CharacterBody3D"]
+script = ExtResource("1")
