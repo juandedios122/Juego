@@ -200,7 +200,7 @@ func _execute_dash() -> void:
 func _execute_pulse() -> void:
 	if _visual: _visual.play_pulse_burst()
 	camera_shake(0.4)
-	var all_enemies := []
+	var all_enemies : Array[Node] = []
 	all_enemies.append_array(get_tree().get_nodes_in_group("worker"))
 	all_enemies.append_array(get_tree().get_nodes_in_group("security"))
 	for enemy in all_enemies:

@@ -51,7 +51,7 @@ func _build() -> void:
 	_cr(_root, Vector2(PX + 28, PY + 352), Vector2(PW - 56, 1), Color(0.10, 0.14, 0.18, 1.0))
 	_lbl(_root, Vector2(PX + 28, PY + 360), Vector2(PW - 56, 18),
 		"CONTROLES DEL JUEGO", 11, COL_MUTED)
-	var ctrl_lines := [
+	var ctrl_lines : Array[String] = [
 		"WASD — Mover          Shift — Sprint",
 		"Ratón — Cámara        E — Absorber",
 		"Q — Dash              R — Pulso",

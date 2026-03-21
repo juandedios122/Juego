@@ -140,7 +140,7 @@ func _pulse_lights() -> void:
 
 	var col    := _level_color()
 	var dim    := Color(col.r * 0.10, col.g * 0.10, col.b * 0.10, 1.0)
-	var speeds := [0.7, 0.45, 0.20, 0.08]
+	var speeds : Array[float] = [0.7, 0.45, 0.20, 0.08]
 	var sp     : float = speeds[clampi(int(current), 0, 3)]
 
 	# ── OPTIMIZACIÓN CLAVE: animar solo un subconjunto representativo ─

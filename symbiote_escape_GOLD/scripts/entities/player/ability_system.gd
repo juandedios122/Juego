@@ -45,7 +45,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	# ── Expirar pasivas con duración ─────────────────────
-	var expired := []
+	var expired : Array[String] = []
 	for name in _timers:
 		_timers[name] -= delta
 		if _timers[name] <= 0.0:

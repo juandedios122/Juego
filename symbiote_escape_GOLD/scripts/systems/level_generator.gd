@@ -131,7 +131,7 @@ func _build_all_rooms() -> void:
 		[30.0, -20.0, 14.0, 12.0, C_REACTOR,  L_REACTOR,  "ARCHIVO"       ],
 		[-30.0,-20.0, 12.0, 12.0, C_SECRETO,  L_SECRETO,  "CAMARA FRIA"   ],
 	]
-	for r in rooms:
+	for r : Array in rooms:
 		_build_room(r[0], r[1], r[2], r[3], r[4], r[5], r[6])
 
 func _build_room(cx: float, cz: float, rw: float, rd: float,
@@ -346,7 +346,7 @@ func _build_atmospheric_details() -> void:
 		[Vector3(4.0, 2.0, -12.0), Vector3(0.6, 0.8, 0.06)],
 		[Vector3(-7.0, 1.0, -28.0), Vector3(0.5, 1.5, 0.06)],
 	]
-	for st in stain_positions:
+	for st : Array in stain_positions:
 		var sm := MeshInstance3D.new()
 		var bm := BoxMesh.new(); bm.size = st[1] as Vector3
 		sm.mesh = bm; sm.position = st[0] as Vector3

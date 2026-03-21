@@ -63,11 +63,11 @@ func _build() -> void:
 		["Récord personal", "%d absorciones" % GM.high_score],
 	]
 	for i in stats.size():
-		var sy := SPY + 148 + i * 52
+		var sy : int = SPY + 148 + i * 52
 		_lbl(_root, Vector2(SPX + 48, sy), Vector2(SPW * 0.55, 28),
-			stats[i][0], 16, COL_MUTED)
+			stats[i][0] as String, 16, COL_MUTED)
 		_lbl(_root, Vector2(SPX + 48, sy), Vector2(SPW - 96, 28),
-			stats[i][1], 18, COL_TEXT, HORIZONTAL_ALIGNMENT_RIGHT)
+			stats[i][1] as String, 18, COL_TEXT, HORIZONTAL_ALIGNMENT_RIGHT)
 		if i < stats.size() - 1:
 			_cr(_root, Vector2(SPX + 48, sy + 36), Vector2(SPW - 96, 1),
 				Color(0.12, 0.04, 0.03, 1.0))

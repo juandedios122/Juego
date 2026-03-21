@@ -77,21 +77,21 @@ func _build() -> void:
 		["Récord anterior",  "%d absorciones" % GM.high_score,           COL_GOLD if _is_record else COL_MUTED],
 	]
 	for i in stats.size():
-		var sy := float(SPY + 116 + i * 72)
+		var sy : float = float(SPY + 116 + i * 72)
 		# Fondo alternado leve
 		if i % 2 == 0:
 			_cr(_root, Vector2(SPX + 2, sy - 4), Vector2(SPW - 4, 62),
 				Color(0.06, 0.10, 0.07, 0.6))
 		_lbl(_root, Vector2(SPX + 40, sy + 6), Vector2(SPW * 0.55, 32),
-			stats[i][0], 16, COL_MUTED)
+			stats[i][0] as String, 16, COL_MUTED)
 		_lbl(_root, Vector2(SPX + 40, sy + 6), Vector2(SPW - 80, 32),
-			stats[i][1], 22, stats[i][2] as Color, HORIZONTAL_ALIGNMENT_RIGHT)
+			stats[i][1] as String, 22, stats[i][2] as Color, HORIZONTAL_ALIGNMENT_RIGHT)
 		if i < stats.size() - 1:
 			_cr(_root, Vector2(SPX + 40, sy + 52), Vector2(SPW - 80, 1),
 				Color(0.08, 0.14, 0.08, 1.0))
 
 	# Botones
-	var by := SPY + 480
+	var by : int = SPY + 480
 	_btn("JUGAR DE NUEVO",  SPX + 40, by, (SPW - 88) / 2,
 		Color(0.06, 0.20, 0.10, 1.0), COL_GREEN, GM.go_to_cinematic)
 	_btn("MENÚ PRINCIPAL",  SPX + 48 + (SPW - 88) / 2, by, (SPW - 88) / 2,
@@ -104,7 +104,7 @@ func _build() -> void:
 	_lbl(_root, Vector2(LP, LY + 20), Vector2(LW, 28),
 		"CONSEJOS DE SIGILO", 15, COL_GOLD, HORIZONTAL_ALIGNMENT_CENTER)
 	_cr(_root, Vector2(LP + 32, LY + 56), Vector2(LW - 64, 1), Color(0.15, 0.12, 0.04, 1.0))
-	var tips := [
+	var tips : Array[String] = [
 		"Los trabajadores huyen al escuchar la alarma.",
 		"Las ventilaciones permiten bypasear zonas vigiladas.",
 		"Absorber guardias activa la alerta más rápido.",

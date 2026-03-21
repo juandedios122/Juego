@@ -151,7 +151,7 @@ func _spawn_enemies() -> void:
 		# ZONA SALIDA (1 trabajador)
 		[Vector3( 0, 1.5, -60), "salida"],
 	]
-	for d in worker_data:
+	for d : Array in worker_data:
 		if ws:
 			var w := ws.instantiate() as Node3D
 			w.position = d[0]
@@ -173,7 +173,7 @@ func _spawn_enemies() -> void:
 		[Vector3(-12, 1.5,-46), "corredor_norte_o"],
 		[Vector3(30, 1.5, -46), "reactor"],   # guardia élite en reactor
 	]
-	for d in guard_data:
+	for d : Array in guard_data:
 		if ss:
 			var s := ss.instantiate() as Node3D
 			s.position = d[0]

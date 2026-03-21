@@ -90,8 +90,8 @@ func _build_buttons() -> void:
 		["SALIR",          Color(0.18, 0.06, 0.06, 1.0), Color(1.0, 0.4, 0.35),  GM.quit_game],
 	]
 	for i in btn_defs.size():
-		var def  := btn_defs[i]
-		var by   := 480 + i * 88
+		var def  : Array = btn_defs[i]
+		var by   : int   = 480 + i * 88
 		_build_btn(def[0] as String, by, def[1] as Color, def[2] as Color, def[3] as Callable)
 
 func _build_btn(txt: String, y: int, bg: Color, fg: Color, cb: Callable) -> void:
