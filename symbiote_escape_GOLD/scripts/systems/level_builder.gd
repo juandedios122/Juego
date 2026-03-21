@@ -190,7 +190,8 @@ func locked_door(pos: Vector3, size: Vector3, col: Color,
 		tw.tween_property(door_ref, "position:y",
 				door_ref.position.y + Constants.LEVEL_WALL_HEIGHT + 0.6,
 				Constants.DOOR_OPEN_TIME).set_ease(Tween.EASE_IN)
-		door_ref.get_node_or_null("CollisionShape3D").disabled = true
+		var col_shape := door_ref.get_node_or_null("CollisionShape3D")
+		if col_shape: col_shape.disabled = true
 		mat_ref.emission = Color(0.0, 1.0, 0.4, 1.0)
 	)
 	return trigger

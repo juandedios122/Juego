@@ -350,7 +350,7 @@ func start_absorb(progress: float) -> void:
 		_abs_mat.emission_energy_multiplier = 1.5 + progress * 3.0
 
 func finish_absorb() -> void:
-	_being_absorbed = true
+	_being_absorbed = false
 	if _is_alerted: Alarm.guard_absorbed(self); _is_alerted = false
 	if Alarm.level_changed.is_connected(_on_alarm_changed):
 		Alarm.level_changed.disconnect(_on_alarm_changed)

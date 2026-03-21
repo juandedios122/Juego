@@ -64,6 +64,7 @@ func _build() -> void:
 	_build_alarm_bar(); _build_health_panel(); _build_xp_panel()
 	_build_abs_panel(); _build_crosshair(); _build_skill_bar()
 	_build_passives_panel(); _build_controls_hint()
+	_build_threat_indicator(); _build_objective_label(); _build_absorb_notification()
 
 func _build_alarm_bar() -> void:
 	_alarm_bar = _rect(_root, Vector2(0,0), Vector2(1920,36), BG_DARK)

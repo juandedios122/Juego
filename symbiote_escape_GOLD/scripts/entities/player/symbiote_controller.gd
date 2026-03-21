@@ -241,7 +241,8 @@ func _on_absorb_complete(target: Node, enemy_type: String) -> void:
 	AudioMgr.play_absorb_complete()
 	_target_fov = Constants.CAM_FOV_NORMAL
 	if _visual: _visual.set_state("idle")
-	target.finish_absorb()
+	if is_instance_valid(target):
+		target.finish_absorb()
 
 func _trigger_slowmo() -> void:
 	Engine.time_scale = Constants.ABSORB_SLOWMO_SCALE
@@ -253,9 +254,11 @@ func _trigger_hitstop(real_seconds: float) -> void:
 	var t := Timer.new()
 	t.wait_time = real_seconds
 	t.process_callback = Timer.TIMER_PROCESS_REAL
-	add_child(t); t.start()
+	add_child(t)
+	t.start()
 	await t.timeout
-	t.queue_free()
+	if is_instance_valid(t):
+		t.queue_free()
 	Engine.time_scale = 1.0
 
 # ── Callbacks de habilidades ──────────────────────────────
