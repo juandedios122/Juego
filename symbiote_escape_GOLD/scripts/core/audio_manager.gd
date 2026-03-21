@@ -154,8 +154,8 @@ func set_heartbeat(hp_fraction: float) -> void:
 func _loop_heartbeat(hp_fraction: float) -> void:
 	if not _heartbeat_active: return
 	_heartbeat_player.play()
-	var bpm      := lerp(148.0, 72.0, clampf(hp_fraction * 3.0, 0.0, 1.0))
-	var interval := 60.0 / bpm
+	var bpm      : float = lerp(148.0, 72.0, clampf(hp_fraction * 3.0, 0.0, 1.0))
+	var interval : float = 60.0 / bpm
 	await get_tree().create_timer(interval).timeout
 	_loop_heartbeat(hp_fraction)
 
