@@ -187,10 +187,14 @@ func _wire_signals() -> void:
 	AudioMgr.play_ambient_start(0)
 	Alarm.level_changed.connect(func(lv: int): AudioMgr.play_ambient_start(lv))
 
+	# ── Música de juego adaptativa ────────────────────────────
+	AudioMgr.play_music(0)
+	Alarm.level_changed.connect(func(lv: int): AudioMgr.play_music(lv))
+
 	# ── Audio de nivel up ────────────────────────────────────
 	ProgressionMgr.level_up.connect(func(_lv: int): AudioMgr.play_level_up())
 	if _player and _player.has_method("get_ability_system"):
-		var ab := _player.get_ability_system()
+		var ab = _player.get_ability_system()
 		if ab: ab.passive_gained.connect(_on_passive_gained_notify)
 
 	if _hud_node:

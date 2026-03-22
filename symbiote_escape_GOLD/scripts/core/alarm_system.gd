@@ -81,14 +81,14 @@ func guard_confirmed(guard: Node) -> void:
 	_decay_timer = 0.0   # detener decaimiento mientras guards activos
 
 ## Guard volvió a patrullar.
-func guard_returned(guard: Node) -> void:
+func guard_returned(_guard: Node) -> void:
 	active_guards = maxi(0, active_guards - 1)
 	_decay_timer  = 0.0
 	if active_guards == 0 and current > Level.CALMA:
 		_decay_ticker.start()   # reanudar decaimiento
 
 ## Guard absorbido.
-func guard_absorbed(guard: Node) -> void:
+func guard_absorbed(_guard: Node) -> void:
 	active_guards = maxi(0, active_guards - 1)
 	_decay_timer  = 0.0
 	if active_guards == 0 and current > Level.CALMA:
@@ -118,7 +118,7 @@ func _apply_level(lv: Level) -> void:
 	if lv == current: return
 	current = lv
 	level_changed.emit(int(lv))
-	GM.alarm_changed.emit(int(lv))
+	GM.alarm_changed.emit(int(lv) as int)
 	_pulse_lights()
 	AudioMgr.play_alarm_change(int(lv))   # stinger auditivo de cambio de estado
 	# Asegurarse de que el timer de decaimiento esté corriendo si hay nivel elevado
@@ -146,7 +146,7 @@ func _pulse_lights() -> void:
 	# ── OPTIMIZACIÓN CLAVE: animar solo un subconjunto representativo ─
 	# Seleccionamos cada N-ésima luz para tener máximo MAX_ANIMATED_LIGHTS.
 	var total  := _lights.size()
-	var step   := maxi(1, total / MAX_ANIMATED_LIGHTS)
+	var step   := maxi(1, total / MAX_ANIMATED_LIGHTS as int)
 	_ltween = create_tween().set_loops()
 	for i in range(0, total, step):
 		if not is_instance_valid(_lights[i]): continue

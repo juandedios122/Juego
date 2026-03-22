@@ -204,7 +204,7 @@ func _execute_pulse() -> void:
 	all_enemies.append_array(get_tree().get_nodes_in_group("worker"))
 	all_enemies.append_array(get_tree().get_nodes_in_group("security"))
 	for enemy in all_enemies:
-		var in_range := enemy.global_position.distance_to(global_position) <= Constants.SKILL_PULSE_RADIUS
+		var in_range: bool = enemy.global_position.distance_to(global_position) <= Constants.SKILL_PULSE_RADIUS
 		if is_instance_valid(enemy) and in_range and enemy.has_method("stun"):
 			enemy.stun(Constants.SKILL_PULSE_STUN_TIME)
 
@@ -253,7 +253,8 @@ func _trigger_hitstop(real_seconds: float) -> void:
 	Engine.time_scale = 0.0
 	var t := Timer.new()
 	t.wait_time = real_seconds
-	t.process_callback = Timer.TIMER_PROCESS_REAL
+	t.ignore_time_scale = true
+	t.one_shot = true
 	add_child(t)
 	t.start()
 	await t.timeout

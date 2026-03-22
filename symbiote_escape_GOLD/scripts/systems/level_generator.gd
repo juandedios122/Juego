@@ -109,7 +109,6 @@ func _setup_environment() -> void:
 	sun.light_color      = Color(0.4, 0.45, 0.55, 1.0)
 	sun.light_energy     = 0.25
 	sun.shadow_enabled            = true
-	sun.directional_shadow_blur_regions = true
 	add_child(sun)
 
 func _build_all_rooms() -> void:
@@ -198,8 +197,8 @@ func _build_locked_doors() -> void:
 		Color(0.1, 0.5, 1.0, 1.0), Constants.DOOR_REQ_CAMARA_FRIA, "CAMARA")
 
 func _build_hazard_zones() -> void:
-	var hz_reactor := _b.hazard_tile(Vector3(30,0,-46), Vector2(12.0,12.0), Color(0.0,1.0,0.15,1.0))
-	var hz_hub     := _b.hazard_tile(Vector3(-30,0,-46), Vector2(10.0,8.0), Color(1.0,0.15,0.0,1.0))
+	var hz_reactor = _b.hazard_tile(Vector3(30,0,-46), Vector2(12.0,12.0), Color(0.0,1.0,0.15,1.0))
+	var hz_hub     = _b.hazard_tile(Vector3(-30,0,-46), Vector2(10.0,8.0), Color(1.0,0.15,0.0,1.0))
 	_b.alert_strip(Vector3(22,0,-37), 5, 3.5, false)
 	_b.alert_strip(Vector3(-36,0,-39), 4, 3.5, false)
 	_wire_hazard_damage(hz_reactor, 4.0)

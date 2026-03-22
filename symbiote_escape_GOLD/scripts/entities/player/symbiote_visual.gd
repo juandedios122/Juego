@@ -34,9 +34,12 @@ var _flash_rect    : ColorRect   = null   # flash blanco absorción
 var _danger_rect   : ColorRect   = null   # viñeta roja peligro
 var _ca_r          : ColorRect   = null   # aberración rojo
 var _ca_b          : ColorRect   = null   # aberración azul
+var _scanlines     : ColorRect   = null   # scanlines CRT
+var _absorb_distort: ColorRect   = null   # pulso de distorsión en absorción
 var _flash_t  : float = 0.0
 var _ca_t     : float = 0.0
 var _danger_hp: float = 1.0
+var _absorb_distort_t: float = 0.0
 
 # ── Rim light ─────────────────────────────────────────────
 var _rim_light : OmniLight3D = null
@@ -96,13 +99,13 @@ func _build_particles() -> void:
 	_fx_stream.color = Color(0.5, 0.0, 1.0, 1.0); _fx_stream.position = Vector3(0.0, 0.9, 0.0)
 	add_child(_fx_stream)
 
-	_fx_burst = CPUParticles3D.new(); _fx_burst.emitting = false; _fx_burst.amount = 140
-	_fx_burst.lifetime = 1.1; _fx_burst.one_shot = true; _fx_burst.explosiveness = 0.98
+	_fx_burst = CPUParticles3D.new(); _fx_burst.emitting = false; _fx_burst.amount = 200
+	_fx_burst.lifetime = 1.4; _fx_burst.one_shot = true; _fx_burst.explosiveness = 0.98
 	_fx_burst.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
 	_fx_burst.emission_sphere_radius = 0.7; _fx_burst.gravity = Vector3(0.0, -2.5, 0.0)
-	_fx_burst.initial_velocity_min = 5.0; _fx_burst.initial_velocity_max = 14.0
-	_fx_burst.scale_amount_min = 0.07; _fx_burst.scale_amount_max = 0.32
-	_fx_burst.color = Color(0.75, 0.0, 1.0, 1.0); _fx_burst.position = Vector3(0.0, 0.9, 0.0)
+	_fx_burst.initial_velocity_min = 6.0; _fx_burst.initial_velocity_max = 18.0
+	_fx_burst.scale_amount_min = 0.06; _fx_burst.scale_amount_max = 0.38
+	_fx_burst.color = Color(0.85, 0.0, 1.0, 1.0); _fx_burst.position = Vector3(0.0, 0.9, 0.0)
 	add_child(_fx_burst)
 
 	_fx_trail = CPUParticles3D.new(); _fx_trail.emitting = false; _fx_trail.amount = 28
@@ -170,6 +173,16 @@ func _build_overlays() -> void:
 	_danger_rect.color = Color(0.55, 0.0, 0.0, 0.0)
 	_danger_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE; _overlay_layer.add_child(_danger_rect)
 
+	# Distorsión de absorción — pulso verde/violeta
+	_absorb_distort = ColorRect.new(); _absorb_distort.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_absorb_distort.color = Color(0.3, 0.0, 0.8, 0.0)
+	_absorb_distort.mouse_filter = Control.MOUSE_FILTER_IGNORE; _overlay_layer.add_child(_absorb_distort)
+
+	# Scanlines CRT sutiles — dan identidad visual sci-fi
+	_scanlines = ColorRect.new(); _scanlines.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_scanlines.color = Color(0.0, 0.0, 0.0, 0.06)
+	_scanlines.mouse_filter = Control.MOUSE_FILTER_IGNORE; _overlay_layer.add_child(_scanlines)
+
 	# Aberración cromática: dos planos semitransparentes desplazados en X
 	var ca_layer := CanvasLayer.new(); ca_layer.layer = 16; add_child(ca_layer)
 	_ca_r = ColorRect.new(); _ca_r.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -187,6 +200,12 @@ func set_state(s: String) -> void:
 	_fx_stream.emitting = (s == "absorb")
 	for t in _tentacle_meshes: t.visible = (s == "absorb")
 	_fx_slime_drops.emitting = (s == "walk")
+	# Distorsión de pantalla al entrar en absorción
+	if s == "absorb":
+		_absorb_distort_t = 1.0
+	else:
+		_absorb_distort_t = 0.0
+		if _absorb_distort: _absorb_distort.color.a = 0.0
 
 func set_sprinting(sprinting: bool) -> void:
 	_was_sprinting = sprinting
@@ -285,6 +304,23 @@ func _process(delta: float) -> void:
 		var danger := clampf(1.0 - _danger_hp * 2.8, 0.0, 0.88)
 		_danger_rect.color.a = danger * (0.42 + sin(_t * 7.0) * 0.20)
 
+	# Distorsión de absorción — pulso violeta que late mientras absorbes
+	if _absorb_distort:
+		if _state == "absorb":
+			_absorb_distort.color.a = 0.10 + sin(_t * 9.0) * 0.07
+			_absorb_distort.color = Color(
+				0.2 + sin(_t * 6.0) * 0.1,
+				0.0,
+				0.7 + sin(_t * 8.5) * 0.2,
+				_absorb_distort.color.a)
+		elif _absorb_distort_t > 0.0:
+			_absorb_distort_t = maxf(0.0, _absorb_distort_t - delta * 3.5)
+			_absorb_distort.color.a = _absorb_distort_t * 0.18
+
+	# Scanlines — parpadeo muy sutil sincronizado con el glow
+	if _scanlines:
+		_scanlines.color.a = 0.05 + sin(_t * 0.7) * 0.01
+
 func _animate_state(power_glow: float) -> void:
 	match _state:
 		"idle":
@@ -302,11 +338,14 @@ func _animate_state(power_glow: float) -> void:
 		"absorb":
 			var p := sin(_t * 6.5) * 0.30 + 1.25
 			body_mesh.scale = Vector3(p, 2.3 - p * 0.52, p)
-			glow.light_energy = power_glow + 3.5 + sin(_t * 12.0) * 2.8
+			glow.light_energy = power_glow + 4.5 + sin(_t * 12.0) * 3.5
+			glow.omni_range   = 5.5 + sin(_t * 8.0) * 1.2
 			if body_mat:
 				var r := 0.38 + sin(_t * 13.0) * 0.22
 				body_mat.emission = Color(r, 0.0, 1.0 - r * 0.3, 1.0)
-				body_mat.emission_energy_multiplier = 2.8 + sin(_t * 9.5) * 1.2
+				body_mat.emission_energy_multiplier = 3.5 + sin(_t * 9.5) * 1.8
+			for em in _eye_mats:
+				em.emission_energy_multiplier = 7.0 + sin(_t * 11.0) * 3.0
 
 func _animate_tentacles() -> void:
 	for i in _tentacle_meshes.size():

@@ -5,8 +5,8 @@ extends Node
 signal game_over
 signal level_complete
 signal absorption_count_changed(count: int)
-signal player_health_changed(hp: float, max_hp: float)
-signal alarm_changed(level: int)
+signal player_health_changed(hp: float, max_hp: float) ## Emitida por el jugador al cambiar vida
+signal alarm_changed(level: int) ## Emitida por AlarmSystem al cambiar nivel
 
 var game_active      : bool = false
 var absorption_count : int  = 0

@@ -299,7 +299,7 @@ func _process(delta: float) -> void:
 		if not _passive_rows.has(name): continue
 		var row : Dictionary = _passive_rows[name]
 		if not (row["timer"] as Label).visible: continue
-		var rem := _ability_sys.get_remaining(name) if _has_ability_sys_method else -1.0
+		var rem: float = _ability_sys.get_remaining(name) if _has_ability_sys_method else -1.0
 		var timer_lbl : Label = row["timer"] as Label
 		if rem < 0.0: timer_lbl.text = "● " + name + "  ∞"
 		elif rem > 0.0: timer_lbl.text = "● " + name + "  %ds" % int(rem + 0.9)

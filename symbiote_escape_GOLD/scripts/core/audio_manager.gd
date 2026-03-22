@@ -13,6 +13,8 @@ var _ambient_level     : int   = -1
 var _absorb_player     : AudioStreamPlayer = null  # loop durante absorción
 var _heartbeat_player  : AudioStreamPlayer = null
 var _heartbeat_active  : bool  = false
+var _music_player      : AudioStreamPlayer = null  # música de juego
+var _music_level       : int   = -1
 
 func _ready() -> void:
 	call_deferred("_prebuild_all")
@@ -29,6 +31,10 @@ func _prebuild_all() -> void:
 	_heartbeat_player.stream    = _make_heartbeat()
 	_heartbeat_player.volume_db = -40.0
 	add_child(_heartbeat_player)
+	_music_player = AudioStreamPlayer.new()
+	_music_player.volume_db = -18.0
+	add_child(_music_player)
+	_loop_music(0)
 
 # ── API pública ───────────────────────────────────────────
 
@@ -301,6 +307,99 @@ func _write16(data: PackedByteArray, idx: int, v: float) -> void:
 func _finalize(data: PackedByteArray, mix_rate: int) -> AudioStreamWAV:
 	var s := AudioStreamWAV.new(); s.format = AudioStreamWAV.FORMAT_16_BITS
 	s.mix_rate = mix_rate; s.stereo = false; s.data = data; return s
+
+## Música de juego adaptativa
+func play_music(alarm_level: int) -> void:
+	if _music_level == alarm_level: return
+	_music_level = alarm_level
+	if _music_player:
+		var tw := create_tween()
+		tw.tween_property(_music_player, "volume_db", -40.0, 0.6)
+		await tw.finished
+		_loop_music(alarm_level)
+
+func stop_music() -> void:
+	if _music_player:
+		var tw := create_tween()
+		tw.tween_property(_music_player, "volume_db", -40.0, 1.2)
+		await tw.finished
+		_music_player.stop()
+	_music_level = -1
+
+func _loop_music(alarm_level: int) -> void:
+	if _music_player == null: return
+	_music_player.stream = _make_music_loop(alarm_level)
+	var target_vol := -18.0 - float(3 - alarm_level) * 3.0
+	_music_player.volume_db = target_vol
+	_music_player.play()
+	_music_player.finished.connect(func():
+		if _music_player and is_instance_valid(_music_player) and _music_level == alarm_level:
+			_music_player.play()
+	, CONNECT_ONE_SHOT)
+
+func _make_music_loop(alarm_level: int) -> AudioStreamWAV:
+	## Música generativa de 4 compases (4/4 a 90bpm) que escala con la alarma.
+	## Nivel 0: pulso suave + pad. Nivel 1-2: bajo + ritmo. Nivel 3: tenso + percusión.
+	var bpm    := 90.0 + float(alarm_level) * 8.0
+	var beat   := 60.0 / bpm
+	var bars   := 4
+	var dur    := beat * 4.0 * float(bars)
+	var n      := int(SR * dur)
+	var d      := PackedByteArray(); d.resize(n * 2)
+	var rng    := RandomNumberGenerator.new(); rng.seed = 1337 + alarm_level
+
+	# Escala pentatónica menor en La (A2=110Hz)
+	var scale_freqs : Array = [110.0, 130.8, 146.8, 164.8, 196.0, 220.0, 261.6, 293.7]
+
+	for i in n:
+		var t      := float(i) / float(SR)
+		var bar_t  := fmod(t, beat * 4.0)
+		var v      := 0.0
+
+		# ── Bajo pulsante (todos los niveles) ──
+		var bass_freq := 55.0 + float(alarm_level) * 5.5
+		var bass_env  := exp(-fmod(t, beat * 0.5) * 14.0) if alarm_level >= 1 else exp(-fmod(t, beat) * 8.0)
+		v += sin(TAU * bass_freq * t) * bass_env * (0.28 + float(alarm_level) * 0.06)
+
+		# ── Pad armónico (nivel 0-1) ──
+		if alarm_level <= 1:
+			var pad_idx := int(bar_t / (beat * 2.0)) % scale_freqs.size()
+			var pf: float = float(scale_freqs[pad_idx]) * 2.0
+			v += sin(TAU * pf * t) * 0.10 * (1.0 - float(alarm_level) * 0.4)
+			v += sin(TAU * pf * 1.5 * t) * 0.05
+
+		# ── Melodía (nivel 1+) ──
+		if alarm_level >= 1:
+			var mel_step := int(t / (beat * 0.5)) % scale_freqs.size()
+			var mf: float = float(scale_freqs[mel_step]) * 4.0
+			var mel_env  := exp(-fmod(t, beat * 0.5) * 18.0)
+			v += sin(TAU * mf * t) * mel_env * 0.14 * float(alarm_level) * 0.5
+
+		# ── Percusión (nivel 2+) ──
+		if alarm_level >= 2:
+			# Kick en tiempos 1 y 3
+			var kick_t := fmod(t, beat * 2.0)
+			var kick_f := 80.0 * exp(-kick_t * 22.0)
+			v += sin(TAU * kick_f * t) * exp(-kick_t * 18.0) * 0.35
+			# Hi-hat en corcheas
+			var hat_t := fmod(t, beat * 0.5)
+			if hat_t < 0.018:
+				v += rng.randf_range(-1.0, 1.0) * exp(-hat_t * 180.0) * 0.12
+
+		# ── Tensión extra (nivel 3) ──
+		if alarm_level >= 3:
+			var tension_f := 220.0 + sin(t * 0.8) * 55.0
+			v += sin(TAU * tension_f * t) * 0.08 * (0.5 + sin(t * 3.1) * 0.5)
+			# Snare en tiempos 2 y 4
+			var snare_t := fmod(t + beat, beat * 2.0)
+			if snare_t < 0.025:
+				v += rng.randf_range(-1.0, 1.0) * exp(-snare_t * 120.0) * 0.22
+
+		# Fade in/out suave para loop sin click
+		var fade := minf(t * 8.0, minf((dur - t) * 8.0, 1.0))
+		_write16(d, i, clampf(v, -1.0, 1.0) * fade)
+
+	return _finalize(d, SR)
 
 func _play(stream: AudioStreamWAV) -> void:
 	var p := AudioStreamPlayer.new(); p.stream = stream; add_child(p); p.play()

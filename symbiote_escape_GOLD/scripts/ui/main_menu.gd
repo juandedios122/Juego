@@ -75,7 +75,7 @@ func _build_title_section() -> void:
 	_title_lbl = _label(_root, Vector2(620, 180), Vector2(1280, 140),
 		"SYMBIOTE", 96, COL_GREEN, HORIZONTAL_ALIGNMENT_CENTER)
 	# "ESCAPE" en texto más pequeño y diferente estilo
-	var escape_lbl := _label(_root, Vector2(620, 306), Vector2(1280, 60),
+	var _escape_lbl := _label(_root, Vector2(620, 306), Vector2(1280, 60),
 		"E S C A P E", 42, Color(0.65, 0.82, 0.67), HORIZONTAL_ALIGNMENT_CENTER)
 	# Línea separadora
 	_cr(_root, Vector2(760, 380), Vector2(800, 1), Color(0.18, 0.92, 0.44, 0.3))
@@ -158,7 +158,7 @@ func _cr(parent: Control, pos: Vector2, sz: Vector2, col: Color) -> ColorRect:
 	return r
 
 func _label(parent: Control, pos: Vector2, sz: Vector2, txt: String,
-		fs: int, col: Color, ha: int = HORIZONTAL_ALIGNMENT_LEFT) -> Label:
+		fs: int, col: Color, ha: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT) -> Label:
 	var l := Label.new()
 	l.position = pos; l.size = sz; l.text = txt
 	l.horizontal_alignment = ha

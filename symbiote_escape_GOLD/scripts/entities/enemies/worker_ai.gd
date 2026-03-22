@@ -178,7 +178,7 @@ func _do_panic(delta: float, pl: Node) -> void:
 	velocity.z = move_toward(velocity.z, 0.0, 15.0 * delta)
 	# Mirar al jugador con miedo
 	if pl and is_instance_valid(pl):
-		var to := pl.global_position - global_position; to.y = 0.0
+		var to : Vector3 = pl.global_position - global_position; to.y = 0.0
 		if to.length_squared() > 0.01:
 			look_at(global_position + to.normalized(), Vector3.UP)
 	# Sacudida de cabeza (simula terror)

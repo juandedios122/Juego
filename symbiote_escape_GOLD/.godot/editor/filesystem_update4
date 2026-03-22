@@ -4,3 +4,8 @@ res://scripts/ui/main_menu.gd
 res://scripts/core/save_manager.gd
 res://scripts/systems/level_manager.gd
 res://scripts/systems/progression_manager.gd
+res://scripts/systems/level_generator.gd
+res://scripts/ui/hud.gd
+res://scripts/entities/player/symbiote_controller.gd
+res://scripts/core/game_manager.gd
+res://scripts/entities/enemies/worker_ai.gd
