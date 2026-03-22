@@ -24,3 +24,8 @@ res://scripts/core/sprite_manager.gd
 res://scripts/entities/player/ability_system.gd
 res://scripts/ui/pause_menu.gd
 res://symbiote_hud.gd
+res://particles/absorb_effect.gd
+res://particles/symbiote_tendrils.gd
+res://scripts/symbiote_lighting_manager.gd
+res://scripts/vfx_controller.gd
+res://particles/symbiote_aura.gd
