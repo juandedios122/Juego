@@ -49,7 +49,7 @@ func trigger_absorption(from_pos: Vector3, to_pos: Vector3):
 	scale_curve.add_point(Vector2(1.0, 0.0))
 	var scale_tex = CurveTexture.new()
 	scale_tex.curve = scale_curve
-	mat.scale_curve_x = scale_tex
+	mat.scale_curve = scale_tex
 	
 	# Color mágico
 	var gradient = Gradient.new()

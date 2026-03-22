@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bl4k3fvmoqptj" path="res://scripts/entities/player/symbiote_controller.gd" id="1"]
 [ext_resource type="Script" uid="uid://i7pj03vskej" path="res://assets/sprite_animator.gd" id="2_cr374"]
 [ext_resource type="Shader" uid="uid://djvj8mdk8eti7" path="res://shaders/symbiote_body.gdshader" id="3_shader"]
-[ext_resource type="Shader" uid="uid://btvtbdh73yoq1" path="res://shaders/symbiote_eyes.gdshader" id="4_shader"]
+[ext_resource type="Shader" path="res://shaders/symbiote_eyes.gdshader" id="4_shader"]
 [ext_resource type="Script" uid="uid://cy1dklr3erack" path="res://particles/symbiote_aura.gd" id="5"]
 [ext_resource type="Script" uid="uid://b8bpujgp0mg10" path="res://particles/symbiote_tendrils.gd" id="6"]
 

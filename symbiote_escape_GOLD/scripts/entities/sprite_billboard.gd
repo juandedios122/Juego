@@ -7,7 +7,6 @@ var _sprite      : AnimatedSprite3D = null
 var _character   : String           = ""   # "guard" | "worker"
 var _current_anim: String           = ""
 var _has_sprites : bool             = false
-var _state_light : OmniLight3D      = null
 
 # Colisión y luces se mantienen en el padre; aquí solo el visual.
 

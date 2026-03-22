@@ -32,7 +32,7 @@ func _ready() -> void:
 	_build_visual()
 	_build_ability_system()
 	call_deferred("_capture_cam_origin")
-	GM.player_health_changed.emit(health, max_health)
+	GM.update_player_health(health, max_health)
 
 func _build_collision() -> void:
 	var col := CollisionShape3D.new()
@@ -233,7 +233,7 @@ func _on_absorb_complete(target: Node, enemy_type: String) -> void:
 	if _ab_sys: _ab_sys.grant_from_enemy(enemy_type)
 	GM.add_absorption()
 	health = minf(health + Constants.PLAYER_HEALTH_REGEN_PER_ABSORB, max_health)
-	GM.player_health_changed.emit(health, max_health)
+	GM.update_player_health(health, max_health)
 
 	# === IMPACTO MÁXIMO ===
 	_cam.absorb_pulse()
@@ -317,7 +317,7 @@ func take_damage(amount: float) -> void:
 	var fuerza_dr := Constants.ABILITY_FUERZA_DR if (_ab_sys and _ab_sys.has_passive("FUERZA")) else 0.0
 	amount *= (1.0 - minf(base_dr + fuerza_dr, Constants.POWER_DR_MAX))
 	health -= amount
-	GM.player_health_changed.emit(health, max_health)
+	GM.update_player_health(health, max_health)
 	_cam.damage_flash()
 	AudioMgr.play_damage()
 	camera_shake(Constants.DAMAGE_CAM_SHAKE)

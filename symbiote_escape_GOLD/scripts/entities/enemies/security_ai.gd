@@ -196,7 +196,7 @@ func _do_investigate(delta: float) -> void:
 		else:
 			_enter_return()
 
-func _do_chase(delta: float, pl: Node) -> void:
+func _do_chase(_delta: float, pl: Node) -> void:
 	if _use_sprite: _billboard.play("chase")
 	if pl and is_instance_valid(pl):
 		last_known    = pl.global_position

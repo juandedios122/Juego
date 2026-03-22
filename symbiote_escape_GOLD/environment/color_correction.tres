@@ -1,0 +1,7 @@
+[gd_resource type="Texture2D" format=3 uid="uid://bt1gi0madsn28"]
+
+[ext_resource type="Texture2D" uid="uid://b8jx8jx8jx8jx8" path="res://environment/color_correction.png" id="1"]
+
+[resource]
+resource_name = "Color Correction"
+texture = ExtResource("1")

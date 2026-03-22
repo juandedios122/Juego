@@ -102,8 +102,8 @@ func has_passive(name: String) -> bool:
 	return passives.has(name)
 
 ## Compatibilidad: alias para código legacy.
-func has(name: String) -> bool:
-	return has_passive(name)
+func has(passive_name: String) -> bool:
+	return has_passive(passive_name)
 
 ## Segundos restantes de una pasiva (-1 si permanente, 0 si inactiva).
 func get_remaining(name: String) -> float:

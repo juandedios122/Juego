@@ -118,7 +118,7 @@ func _apply_level(lv: Level) -> void:
 	if lv == current: return
 	current = lv
 	level_changed.emit(int(lv))
-	GM.alarm_changed.emit(int(lv) as int)
+	GM.update_alarm_level(int(lv))
 	_pulse_lights()
 	AudioMgr.play_alarm_change(int(lv))   # stinger auditivo de cambio de estado
 	# Asegurarse de que el timer de decaimiento esté corriendo si hay nivel elevado
@@ -146,7 +146,7 @@ func _pulse_lights() -> void:
 	# ── OPTIMIZACIÓN CLAVE: animar solo un subconjunto representativo ─
 	# Seleccionamos cada N-ésima luz para tener máximo MAX_ANIMATED_LIGHTS.
 	var total  := _lights.size()
-	var step   := maxi(1, total / MAX_ANIMATED_LIGHTS as int)
+	var step   := maxi(1, int(total / float(MAX_ANIMATED_LIGHTS)))
 	# Crear el tween SIN loops todavía — set_loops() solo si hay tweeners
 	_ltween = create_tween()
 	var tweener_count := 0

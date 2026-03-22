@@ -8,6 +8,12 @@ signal absorption_count_changed(count: int)
 signal player_health_changed(hp: float, max_hp: float)
 signal alarm_changed(level: int)
 
+func update_player_health(hp: float, max_hp: float) -> void:
+	player_health_changed.emit(hp, max_hp)
+
+func update_alarm_level(level: int) -> void:
+	alarm_changed.emit(level)
+
 var game_active      : bool  = false
 var absorption_count : int   = 0
 var high_score       : int   = 0
