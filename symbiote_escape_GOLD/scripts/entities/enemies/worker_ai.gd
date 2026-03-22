@@ -24,10 +24,14 @@ var _mesh        : MeshInstance3D    = null
 var _head        : MeshInstance3D    = null
 var _body_mat    : StandardMaterial3D = null
 var _state_light : OmniLight3D       = null
-var _panic_particles : CPUParticles3D = null  # partículas de "?" o "!" sobre la cabeza
+var _panic_particles : CPUParticles3D = null
 var _sentido_ring : MeshInstance3D   = null
 var _sentido_t   : float = 0.0
 var _base_col : Color
+
+# ── Sprite billboard ──────────────────────────────────────
+var _billboard  : Node3D = null
+var _use_sprite : bool   = false
 
 # Caché jugador
 var _pl_ref : Node = null
@@ -56,6 +60,16 @@ func _build_visual() -> void:
 	col.shape = cap; col.position = Vector3(0.0, 0.8, 0.0)
 	add_child(col)
 
+	# ── Intentar cargar sprite billboard ─────────────────
+	var bb_script := load("res://scripts/entities/sprite_billboard.gd")
+	if bb_script:
+		_billboard = Node3D.new()
+		_billboard.set_script(bb_script)
+		add_child(_billboard)
+		_billboard.setup("worker", 0.85)
+		_use_sprite = _billboard.is_ready()
+
+	# ── Visual por código (se oculta si hay sprite) ───────
 	_mesh = MeshInstance3D.new()
 	var cy := CylinderMesh.new()
 	cy.top_radius = 0.27; cy.bottom_radius = 0.31; cy.height = 1.1
@@ -63,6 +77,7 @@ func _build_visual() -> void:
 	_body_mat = StandardMaterial3D.new()
 	_body_mat.albedo_color = _base_col
 	_mesh.material_override = _body_mat
+	_mesh.visible = not _use_sprite
 	add_child(_mesh)
 
 	_head = MeshInstance3D.new()
@@ -71,20 +86,19 @@ func _build_visual() -> void:
 	var hm := StandardMaterial3D.new()
 	hm.albedo_color = Color(0.75, 0.60, 0.52, 1.0)
 	_head.material_override = hm
+	_head.visible = not _use_sprite
 	add_child(_head)
 
 	var rim_lt := OmniLight3D.new()
 	rim_lt.position = Vector3(0.0, 1.0, 0.42); rim_lt.light_color = Color(0.8, 0.6, 0.3, 1.0)
 	rim_lt.light_energy = 0.32; rim_lt.omni_range = 1.6; add_child(rim_lt)
 
-	# Luz de estado (color cambia según emoción)
 	_state_light = OmniLight3D.new()
 	_state_light.position     = Vector3(0.0, 2.2, 0.0)
 	_state_light.light_energy = 0.0
 	_state_light.omni_range   = 2.5
 	add_child(_state_light)
 
-	# Partículas de exclamación de pánico (pequeñas partículas amarillas)
 	_panic_particles = CPUParticles3D.new()
 	_panic_particles.emitting             = false
 	_panic_particles.amount               = 10
@@ -101,7 +115,6 @@ func _build_visual() -> void:
 	_panic_particles.position             = Vector3(0.0, 2.0, 0.0)
 	add_child(_panic_particles)
 
-	# Anillo SENTIDO
 	_sentido_ring = MeshInstance3D.new()
 	var sm := SphereMesh.new(); sm.radius = 0.70; sm.height = 1.40
 	_sentido_ring.mesh = sm
@@ -165,6 +178,7 @@ func _do_idle(delta: float) -> void:
 func _do_patrol(delta: float) -> void:
 	if waypoints.is_empty(): state = State.IDLE; _pat_timer = 2.0; return
 	var spd := Constants.WORKER_SPEED_ALERT if _alarm_level >= 1 else Constants.WORKER_SPEED_PATROL
+	if _use_sprite: _billboard.play("walk")
 	_move_toward(waypoints[_wp_idx], spd, delta)
 	if global_position.distance_to(waypoints[_wp_idx]) < 1.0:
 		_wp_idx    = (_wp_idx + 1) % waypoints.size()
@@ -176,6 +190,7 @@ func _do_panic(delta: float, pl: Node) -> void:
 	_panic_timer -= delta
 	velocity.x = move_toward(velocity.x, 0.0, 15.0 * delta)
 	velocity.z = move_toward(velocity.z, 0.0, 15.0 * delta)
+	if _use_sprite: _billboard.play("panic")
 	# Mirar al jugador con miedo
 	if pl and is_instance_valid(pl):
 		var to : Vector3 = pl.global_position - global_position; to.y = 0.0
@@ -195,6 +210,7 @@ func _do_panic(delta: float, pl: Node) -> void:
 
 func _do_flee(delta: float, pl: Node) -> void:
 	if pl == null: state = State.PATROL; return
+	if _use_sprite: _billboard.play("flee")
 	var dist := global_position.distance_to(pl.global_position)
 	var away : Vector3 = (global_position - pl.global_position).normalized()
 	_move_toward(global_position + away * 6.0, Constants.WORKER_SPEED_FLEE, delta)
@@ -208,6 +224,7 @@ func _do_flee(delta: float, pl: Node) -> void:
 func _do_hide(delta: float) -> void:
 	velocity.x = move_toward(velocity.x, 0.0, 12.0 * delta)
 	velocity.z = move_toward(velocity.z, 0.0, 12.0 * delta)
+	if _use_sprite: _billboard.play("hide")
 	_hide_timer -= delta
 	# Agacharse visualmente
 	if _mesh: _mesh.scale.y = move_toward(_mesh.scale.y, 0.6, delta * 4.0)
@@ -301,6 +318,9 @@ func stun(duration: float) -> void:
 
 func start_absorb(progress: float) -> void:
 	state = State.BEING_ABSORBED
+	if _use_sprite:
+		_billboard.play("absorb")
+		_billboard.set_absorb_tint(progress)
 	if _body_mat:
 		_body_mat.albedo_color = _base_col.lerp(Color(0.05, 0.0, 0.15, 1.0), progress)
 		_body_mat.emission_enabled = true

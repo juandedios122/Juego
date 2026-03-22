@@ -24,6 +24,7 @@ Alarm="*res://scripts/core/alarm_system.gd"
 SaveMgr="*res://scripts/core/save_manager.gd"
 ProgressionMgr="*res://scripts/systems/progression_manager.gd"
 AudioMgr="*res://scripts/core/audio_manager.gd"
+SpriteMgr="*res://scripts/core/sprite_manager.gd"
 
 [display]
 

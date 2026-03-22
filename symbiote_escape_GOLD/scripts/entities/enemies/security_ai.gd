@@ -30,6 +30,10 @@ var _sentido_t      : float = 0.0
 var _being_absorbed : bool  = false
 var _search_sweep   : float = 0.0   # ángulo de búsqueda en grid
 
+# ── Sprite billboard (reemplaza mesh si hay imágenes) ────
+var _billboard : Node3D = null
+var _use_sprite : bool  = false
+
 var _pl_ref : Node = null
 var _ab_sys : Node = null
 
@@ -57,6 +61,16 @@ func _build_visual() -> void:
 	col.shape = cap; col.position = Vector3(0.0, 0.85, 0.0)
 	add_child(col)
 
+	# ── Intentar cargar sprite billboard ─────────────────
+	var bb_script := load("res://scripts/entities/sprite_billboard.gd")
+	if bb_script:
+		_billboard = Node3D.new()
+		_billboard.set_script(bb_script)
+		add_child(_billboard)
+		_billboard.setup("guard", 0.9)
+		_use_sprite = _billboard.is_ready()
+
+	# ── Visual por código (siempre se crea, se oculta si hay sprite) ──
 	_mesh = MeshInstance3D.new()
 	var cy := CylinderMesh.new()
 	cy.top_radius = 0.29; cy.bottom_radius = 0.33; cy.height = 1.15
@@ -66,6 +80,7 @@ func _build_visual() -> void:
 	mat.metallic     = 0.4
 	mat.roughness    = 0.6
 	_mesh.material_override = mat
+	_mesh.visible = not _use_sprite
 	add_child(_mesh)
 
 	var head := MeshInstance3D.new()
@@ -74,6 +89,7 @@ func _build_visual() -> void:
 	var hm := StandardMaterial3D.new()
 	hm.albedo_color = Color(0.18, 0.16, 0.14, 1.0)
 	head.material_override = hm
+	head.visible = not _use_sprite
 	add_child(head)
 
 	var rim := OmniLight3D.new()
@@ -86,7 +102,7 @@ func _build_visual() -> void:
 	_spot.light_energy = 2.0
 	_spot.spot_range   = Constants.GUARD_FOV_DISTANCE
 	_spot.spot_angle   = 28.0
-	_spot.light_volumetric_fog_energy = 0.8  # volum fog visible
+	_spot.light_volumetric_fog_energy = 0.8
 	add_child(_spot)
 
 	_sentido_ring = MeshInstance3D.new()
@@ -149,6 +165,7 @@ func _physics_process(delta: float) -> void:
 func _do_patrol(_delta: float) -> void:
 	if waypoints.is_empty(): return
 	_move_to(waypoints[_wp_idx], Constants.GUARD_SPEED_PATROL)
+	if _use_sprite: _billboard.play("walk")
 	if global_position.distance_to(waypoints[_wp_idx]) < 1.2:
 		_wp_idx = (_wp_idx + 1) % waypoints.size()
 
@@ -157,6 +174,7 @@ func _do_suspicious(delta: float, pl: Node) -> void:
 	if to.length_squared() > 0.01: look_at(global_position + to.normalized(), Vector3.UP)
 	velocity.x = move_toward(velocity.x, 0.0, 12.0 * delta)
 	velocity.z = move_toward(velocity.z, 0.0, 12.0 * delta)
+	if _use_sprite: _billboard.play("idle")
 	# Barrido con la linterna durante SUSPICIOUS
 	_search_sweep += delta * 2.5
 	if _spot: _spot.rotation.y = sin(_search_sweep) * 0.4
@@ -179,6 +197,7 @@ func _do_investigate(delta: float) -> void:
 			_enter_return()
 
 func _do_chase(delta: float, pl: Node) -> void:
+	if _use_sprite: _billboard.play("chase")
 	if pl and is_instance_valid(pl):
 		last_known    = pl.global_position
 		_memory_timer = Constants.GUARD_MEMORY_TIME
@@ -200,6 +219,7 @@ func _do_chase(delta: float, pl: Node) -> void:
 			_enter_return()
 
 func _do_attack(pl: Node) -> void:
+	if _use_sprite: _billboard.play("attack")
 	if pl == null or not is_instance_valid(pl): state = State.CHASE; return
 	var dist := global_position.distance_to(pl.global_position)
 	if dist > Constants.GUARD_ATTACK_RANGE * 1.6: state = State.CHASE; return
@@ -339,6 +359,9 @@ func stun(duration: float) -> void:
 
 func start_absorb(progress: float) -> void:
 	_being_absorbed = true
+	if _use_sprite:
+		_billboard.play("absorb")
+		_billboard.set_absorb_tint(progress)
 	if _mesh:
 		if _abs_mat == null:
 			_abs_mat = StandardMaterial3D.new()

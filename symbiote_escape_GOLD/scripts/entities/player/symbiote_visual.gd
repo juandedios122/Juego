@@ -2,11 +2,16 @@ extends Node3D
 ## SymbioteVisual — Gold build. Final polish.
 ## NUEVO vs comercial: aberración cromática, flash blanco, anillo desde objetivo,
 ## gotas de slime, rim light dinámico, double-pulse anillo, vignette mejorada.
+## SPRITES: usa AnimatedSprite3D si hay imágenes en assets/sprites/symbiote/
 
 var body_mesh   : MeshInstance3D     = null
 var glow        : OmniLight3D        = null
 var body_mat    : StandardMaterial3D = null
 var _eye_mats   : Array              = []
+
+# ── Sprite (reemplaza body_mesh + eyes si hay imágenes) ──
+var _sprite      : AnimatedSprite3D = null
+var _use_sprite  : bool             = false
 
 var _fx_stream      : CPUParticles3D = null
 var _fx_burst       : CPUParticles3D = null
@@ -49,8 +54,52 @@ func _ready() -> void:
 	_build_rim_light(); _build_particles()
 	_build_tentacles(); _build_pulse_rings()
 	_build_overlays()
+	_try_load_sprite()
 
 # ─────────────────────────────────────────────────────────
+func _try_load_sprite() -> void:
+	## Carga el spritesheet del simbionte si existe.
+	## El sprite es billboard y reemplaza el mesh esférico + ojos.
+	if not Engine.has_singleton("SpriteMgr"): return
+	var mgr : Node = Engine.get_singleton("SpriteMgr")
+	if not mgr.has_sprites("symbiote"): return
+
+	_sprite = AnimatedSprite3D.new()
+	_sprite.billboard      = BaseMaterial3D.BILLBOARD_ENABLED
+	_sprite.pixel_size     = 0.016
+	_sprite.position       = Vector3(0.0, 0.9, 0.0)
+	_sprite.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	_sprite.cast_shadow    = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(_sprite)
+
+	var sf := SpriteFrames.new()
+	for anim_name in ["idle", "walk", "absorb", "dash"]:
+		var frames := mgr.get_frames("symbiote", anim_name)
+		if frames == null: continue
+		if not sf.has_animation(anim_name):
+			sf.add_animation(anim_name)
+			sf.set_animation_speed(anim_name, frames.get_animation_speed(anim_name))
+			sf.set_animation_loop(anim_name, frames.get_animation_loop(anim_name))
+			for i in frames.get_frame_count(anim_name):
+				sf.add_frame(anim_name, frames.get_frame_texture(anim_name, i))
+	_sprite.sprite_frames = sf
+	_sprite.play("idle")
+	_use_sprite = true
+
+	# Ocultar mesh por código cuando hay sprite
+	if body_mesh: body_mesh.visible = false
+	for em in _eye_mats:
+		var eye_node := em.get_local_scene()
+		if eye_node: eye_node.visible = false
+
+func _play_sprite(anim: String) -> void:
+	if not _use_sprite or _sprite == null: return
+	if _sprite.sprite_frames == null: return
+	if not _sprite.sprite_frames.has_animation(anim):
+		if _sprite.sprite_frames.has_animation("idle"): _sprite.play("idle")
+		return
+	if _sprite.animation != anim: _sprite.play(anim)
+
 func _build_body() -> void:
 	body_mat = StandardMaterial3D.new()
 	body_mat.albedo_color               = Color(0.02, 0.01, 0.05, 1.0)
@@ -198,8 +247,13 @@ func set_state(s: String) -> void:
 	if _state == s: return
 	_state = s; _t = 0.0
 	_fx_stream.emitting = (s == "absorb")
-	for t in _tentacle_meshes: t.visible = (s == "absorb")
+	for t in _tentacle_meshes: t.visible = (s == "absorb") and not _use_sprite
 	_fx_slime_drops.emitting = (s == "walk")
+	# Sprite
+	match s:
+		"idle":    _play_sprite("idle")
+		"walk":    _play_sprite("walk")
+		"absorb":  _play_sprite("absorb")
 	# Distorsión de pantalla al entrar en absorción
 	if s == "absorb":
 		_absorb_distort_t = 1.0
@@ -253,6 +307,7 @@ func play_absorb_burst_at(world_pos: Vector3) -> void:
 	_fx_burst.global_position = world_pos; _fx_burst.emitting = true
 
 func play_dash_flash() -> void:
+	_play_sprite("dash")
 	if body_mat:
 		var tw := create_tween()
 		tw.tween_property(body_mat, "emission_energy_multiplier", 14.0, 0.04)
@@ -322,6 +377,10 @@ func _process(delta: float) -> void:
 		_scanlines.color.a = 0.05 + sin(_t * 0.7) * 0.01
 
 func _animate_state(power_glow: float) -> void:
+	# Si hay sprite, solo actualizamos el glow (el sprite maneja la animación visual)
+	if _use_sprite:
+		if glow: glow.light_energy = power_glow + sin(_t * 3.14) * 0.35
+		return
 	match _state:
 		"idle":
 			var b := sin(_t * PI) * 0.04
