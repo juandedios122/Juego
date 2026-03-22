@@ -1,6 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://security_v4"]
+[gd_scene format=3 uid="uid://bt8osa8bia0mq"]
 
-[ext_resource type="Script" path="res://scripts/entities/enemies/security_ai.gd" id="1"]
+[ext_resource type="Script" uid="uid://ieidl4xcuj0f" path="res://scripts/entities/enemies/security_ai.gd" id="1"]
+[ext_resource type="Script" uid="uid://i7pj03vskej" path="res://assets/sprite_animator.gd" id="2_au0y3"]
 
-[node name="Security" type="CharacterBody3D"]
+[node name="Security" type="CharacterBody3D" unique_id=305793813]
 script = ExtResource("1")
+
+[node name="SpriteAnimator" type="Node3D" parent="." unique_id=1413493408]
+script = ExtResource("2_au0y3")
+character = "guard"

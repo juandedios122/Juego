@@ -11,3 +11,9 @@ res://scripts/core/game_manager.gd
 res://scripts/entities/enemies/worker_ai.gd
 res://scripts/entities/enemies/security_ai.gd
 res://scripts/systems/level_builder.gd
+res://scenes/enemies/worker.tscn
+res://shaders/symbiote_body.gdshader
+res://README.md
+res://assets/sprites/README.md
+res://scenes/player/symbiote.tscn
+res://scenes/enemies/security.tscn

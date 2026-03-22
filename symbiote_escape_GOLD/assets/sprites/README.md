@@ -8,25 +8,25 @@ El juego los carga automáticamente. Si no existen, usa el visual por código.
 ```
 assets/sprites/
   symbiote/
-    idle.png        — 4 frames, 128x128 px cada uno (fila horizontal)
-    walk.png        — 6 frames, 128x128 px
-    absorb.png      — 6 frames, 128x128 px
-    dash.png        — 4 frames, 128x128 px
+	idle.png        — 4 frames, 128x128 px cada uno (fila horizontal)
+	walk.png        — 6 frames, 128x128 px
+	absorb.png      — 6 frames, 128x128 px
+	dash.png        — 4 frames, 128x128 px
 
   guard/
-    idle.png        — 4 frames, 64x128 px
-    walk.png        — 6 frames, 64x128 px
-    chase.png       — 6 frames, 64x128 px
-    attack.png      — 4 frames, 64x128 px
-    absorb.png      — 4 frames, 64x128 px (siendo absorbido)
+	idle.png        — 4 frames, 64x128 px
+	walk.png        — 6 frames, 64x128 px
+	chase.png       — 6 frames, 64x128 px
+	attack.png      — 4 frames, 64x128 px
+	absorb.png      — 4 frames, 64x128 px (siendo absorbido)
 
   worker/
-    idle.png        — 4 frames, 64x128 px
-    walk.png        — 6 frames, 64x128 px
-    panic.png       — 4 frames, 64x128 px
-    flee.png        — 6 frames, 64x128 px
-    hide.png        — 2 frames, 64x128 px
-    absorb.png      — 4 frames, 64x128 px
+	idle.png        — 4 frames, 64x128 px
+	walk.png        — 6 frames, 64x128 px
+	panic.png       — 4 frames, 64x128 px
+	flee.png        — 6 frames, 64x128 px
+	hide.png        — 2 frames, 64x128 px
+	absorb.png      — 4 frames, 64x128 px
 ```
 
 ## Fuentes gratuitas recomendadas

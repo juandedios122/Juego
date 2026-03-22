@@ -173,6 +173,7 @@ func _do_idle(delta: float) -> void:
 	_pat_timer -= delta
 	velocity.x = move_toward(velocity.x, 0.0, 12.0 * delta)
 	velocity.z = move_toward(velocity.z, 0.0, 12.0 * delta)
+	if _use_sprite: _billboard.play("idle")
 	if _pat_timer <= 0.0: state = State.PATROL
 
 func _do_patrol(delta: float) -> void:
@@ -342,9 +343,11 @@ func _move_toward(tgt: Vector3, spd: float, delta: float) -> void:
 		dir = dir.normalized()
 		velocity.x = dir.x * spd; velocity.z = dir.z * spd
 		look_at(global_position + dir, Vector3.UP)
+		if _use_sprite: _billboard.set_flip_h(dir.x < -0.3)
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, spd * 8.0 * delta)
 		velocity.z = move_toward(velocity.z, 0.0, spd * 8.0 * delta)
+		if _use_sprite: _billboard.play("idle")
 
 func _set_state_light(col: Color) -> void:
 	if _state_light: _state_light.light_color = col; _state_light.light_energy = 1.4

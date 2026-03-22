@@ -270,6 +270,9 @@ func set_power(absorption_count: int) -> void:
 	_power = absorption_count
 	if _rim_light: _rim_light.light_energy = 0.8 + float(_power) * 0.08
 
+func set_flip_h(flipped: bool) -> void:
+	if _sprite: _sprite.flip_h = flipped
+
 func set_stealth_visual(active: bool) -> void:
 	if body_mat:
 		body_mat.albedo_color.a = 0.12 if active else 1.0

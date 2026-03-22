@@ -234,9 +234,11 @@ func _do_attack(pl: Node) -> void:
 func _do_return(_delta: float) -> void:
 	if waypoints.is_empty(): return
 	_move_to(waypoints[_wp_idx], Constants.GUARD_SPEED_PATROL)
+	if _use_sprite: _billboard.play("walk")
 	if global_position.distance_to(waypoints[_wp_idx]) < 1.8:
 		if _is_alerted: _is_alerted = false; Alarm.guard_returned(self)
 		state = State.PATROL
+		if _use_sprite: _billboard.play("idle")
 		_spot_color(Color(0.9, 0.9, 0.7, 1.0))
 
 func _radio_position(player_pos: Vector3) -> void:
@@ -401,8 +403,11 @@ func _move_to(tgt: Vector3, spd: float) -> void:
 		dir = dir.normalized()
 		velocity.x = dir.x * spd; velocity.z = dir.z * spd
 		look_at(global_position + dir, Vector3.UP)
+		# Flip sprite según si se mueve hacia la izquierda relativa a su propio eje
+		if _use_sprite: _billboard.set_flip_h(dir.x < -0.3)
 	else:
 		velocity.x = 0.0; velocity.z = 0.0
+		if _use_sprite: _billboard.play("idle")
 
 func _spot_color(col: Color) -> void:
 	if _spot: _spot.light_color = col

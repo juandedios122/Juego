@@ -22,7 +22,7 @@ func setup(character: String, height_offset: float = 0.9) -> void:
 
 	_sprite = AnimatedSprite3D.new()
 	_sprite.billboard        = BaseMaterial3D.BILLBOARD_ENABLED
-	_sprite.pixel_size       = 0.012          # ajusta escala visual
+	_sprite.pixel_size       = 0.01           # 128px frame = ~1.28 unidades, coincide con cápsula
 	_sprite.position         = Vector3(0.0, height_offset, 0.0)
 	_sprite.texture_filter   = BaseMaterial3D.TEXTURE_FILTER_NEAREST  # pixel art nítido
 	_sprite.cast_shadow      = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -76,3 +76,6 @@ func reset_tint() -> void:
 
 func set_visible_sprite(v: bool) -> void:
 	if _sprite: _sprite.visible = v
+
+func set_flip_h(flipped: bool) -> void:
+	if _sprite: _sprite.flip_h = flipped

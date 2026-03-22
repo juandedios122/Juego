@@ -26,8 +26,8 @@ scripts/
   core/          — singletons globales
   systems/       — cinemática, generador de nivel, level manager
   entities/
-    player/      — symbiote_controller, ability_system
-    enemies/     — worker_ai, security_ai
+	player/      — symbiote_controller, ability_system
+	enemies/     — worker_ai, security_ai
   ui/            — hud, main_menu, pause_menu, game_over, victory, options
 scenes/
   player/, enemies/, ui/

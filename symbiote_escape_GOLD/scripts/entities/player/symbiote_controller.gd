@@ -155,6 +155,10 @@ func _handle_movement(delta: float) -> void:
 		if _visual:
 			_visual.set_state("walk")
 			_visual.set_sprinting(_is_sprinting)
+			# Voltear sprite según dirección lateral relativa a la cámara
+			if _visual.has_method("set_flip_h"):
+				var cam_right := global_transform.basis.x
+				_visual.set_flip_h(dir.dot(cam_right) < -0.3)
 		# FOV objetivo: sprint = wider
 		_target_fov = Constants.CAM_FOV_SPRINT if _is_sprinting else Constants.CAM_FOV_NORMAL
 	else:
@@ -163,6 +167,8 @@ func _handle_movement(delta: float) -> void:
 		if _visual and not _absorber.active:
 			_visual.set_state("idle")
 			_visual.set_sprinting(false)
+			if _visual.has_method("set_flip_h"):
+				_visual.set_flip_h(false)
 		_target_fov = Constants.CAM_FOV_NORMAL
 
 func _handle_absorb(delta: float) -> void:
