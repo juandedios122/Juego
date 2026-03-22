@@ -167,7 +167,7 @@ func _build_ui():
 	# PANEL INFERIOR - SELECTOR NIVEL
 	# =========================================
 	var bottom_container = PanelContainer.new()
-	bottom_container.set_anchors_preset(Control.PRESET_BOTTOM_CENTER)
+	bottom_container.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	bottom_container.custom_minimum_size = Vector2(320, 0)
 	bottom_container.position = Vector2(-160, -56)
 	add_child(bottom_container)

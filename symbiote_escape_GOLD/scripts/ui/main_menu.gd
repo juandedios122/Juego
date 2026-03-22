@@ -25,6 +25,7 @@ func _build() -> void:
 	_build_background()
 	_build_title_section()
 	_main_panel = _build_main_panel()
+	_root.add_child(_main_panel)
 	_slot_panel = _build_slot_panel()
 	_root.add_child(_slot_panel)
 	_slot_panel.visible = false
@@ -69,7 +70,6 @@ func _build_title_section() -> void:
 func _build_main_panel() -> Control:
 	var panel := Control.new()
 	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_root.add_child(panel)
 	var btn_defs := [
 		["NUEVA / CONTINUAR",  Color(0.08, 0.50, 0.22, 1.0), COL_GREEN,              _show_slots],
 		["OPCIONES",           Color(0.06, 0.10, 0.22, 1.0), Color(0.55, 0.75, 1.0), _open_options],
@@ -81,8 +81,8 @@ func _build_main_panel() -> Control:
 			def[1] as Color, def[2] as Color, def[3] as Callable)
 	# Mejor puntuación global
 	var best := 0
-	for s in 3:
-		var summary := SaveMgr.get_slot_summary(s)
+	for slot_idx in 3:
+		var summary := SaveMgr.get_slot_summary(slot_idx)
 		best = maxi(best, int(summary["absorptions"]))
 	_lbl(panel, Vector2(50, 860), Vector2(540, 26),
 		"MEJOR RESULTADO: %d absorciones" % best, 16,
@@ -92,7 +92,6 @@ func _build_main_panel() -> Control:
 func _build_slot_panel() -> Control:
 	var panel := Control.new()
 	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_root.add_child(panel)
 	# Fondo semitransparente
 	_cr(panel, Vector2(580, 400), Vector2(760, 380), Color(0.03, 0.05, 0.08, 0.96))
 	_cr(panel, Vector2(580, 400), Vector2(760, 2), COL_GREEN * 0.6)

@@ -2,17 +2,20 @@
 
 [ext_resource type="Script" uid="uid://bl4k3fvmoqptj" path="res://scripts/entities/player/symbiote_controller.gd" id="1"]
 [ext_resource type="Script" uid="uid://i7pj03vskej" path="res://assets/sprite_animator.gd" id="2_cr374"]
-[ext_resource type="Shader" uid="uid://symbiote_body_shader" path="res://shaders/symbiote_body.gdshader" id="3_shader"]
-[ext_resource type="Shader" uid="uid://symbiote_eyes_shader" path="res://shaders/symbiote_eyes.gdshader" id="4_shader"]
-[ext_resource type="Script" path="res://particles/symbiote_aura.gd" id="5"]
-[ext_resource type="Script" path="res://particles/symbiote_tendrils.gd" id="6"]
+[ext_resource type="Shader" uid="uid://djvj8mdk8eti7" path="res://shaders/symbiote_body.gdshader" id="3_shader"]
+[ext_resource type="Shader" uid="uid://btvtbdh73yoq1" path="res://shaders/symbiote_eyes.gdshader" id="4_shader"]
+[ext_resource type="Script" uid="uid://cy1dklr3erack" path="res://particles/symbiote_aura.gd" id="5"]
+[ext_resource type="Script" uid="uid://b8bpujgp0mg10" path="res://particles/symbiote_tendrils.gd" id="6"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_1"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_1"]
+render_priority = 0
 shader = ExtResource("3_shader")
-shader_parameter/color_base = Color(0.04, 0.01, 0.08, 1.0)
-shader_parameter/color_venas = Color(0.35, 0.0, 0.6, 1.0)
-shader_parameter/color_glow = Color(0.6, 0.0, 1.0, 1.0)
-shader_parameter/color_tendrils = Color(0.15, 0.0, 0.3, 1.0)
+shader_parameter/color_base = Color(0.04, 0.01, 0.08, 1)
+shader_parameter/color_venas = Color(0.35, 0, 0.6, 1)
+shader_parameter/color_glow = Color(0.6, 0, 1, 1)
+shader_parameter/color_tendrils = Color(0.15, 0, 0.3, 1)
 shader_parameter/metallic = 0.7
 shader_parameter/roughness = 0.15
 shader_parameter/subsurface_strength = 0.6
@@ -27,17 +30,17 @@ shader_parameter/vein_intensity = 1.8
 shader_parameter/displacement_strength = 0.04
 shader_parameter/noise_scale = 5.0
 
-[sub_resource type="SphereMesh" id="SphereMesh_1"]
-radius = 0.5
-height = 1.0
+[sub_resource type="SphereMesh" id="SphereMesh_eye"]
+radius = 0.12
+height = 0.24
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_eyes"]
-transparency = 1
+render_priority = 0
 shader = ExtResource("4_shader")
-shader_parameter/color_iris = Color(1.0, 1.0, 1.0, 1.0)
-shader_parameter/color_pupil = Color(0.0, 0.0, 0.0, 1.0)
-shader_parameter/color_glow_inner = Color(0.9, 0.95, 1.0, 1.0)
-shader_parameter/color_glow_outer = Color(0.5, 0.0, 1.0, 1.0)
+shader_parameter/color_iris = Color(1, 1, 1, 1)
+shader_parameter/color_pupil = Color(0, 0, 0, 1)
+shader_parameter/color_glow_inner = Color(0.9, 0.95, 1, 1)
+shader_parameter/color_glow_outer = Color(0.5, 0, 1, 1)
 shader_parameter/glow_intensity = 3.0
 shader_parameter/pupil_size = 0.25
 shader_parameter/iris_sharpness = 8.0
@@ -45,32 +48,30 @@ shader_parameter/scan_speed = 0.6
 shader_parameter/flicker_speed = 3.0
 shader_parameter/menace_pulse = 0.5
 
-[sub_resource type="SphereMesh" id="SphereMesh_eye"]
-radius = 0.12
-height = 0.24
-
 [node name="Symbiote" type="CharacterBody3D" unique_id=1309109481 groups=["player"]]
 script = ExtResource("1")
 
 [node name="SpriteAnimator" type="Node3D" parent="." unique_id=546366816]
 script = ExtResource("2_cr374")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1167113706]
 mesh = SubResource("SphereMesh_1")
 surface_material_override/0 = SubResource("ShaderMaterial_1")
 
-[node name="EyeLeft" type="MeshInstance3D" parent="."]
+[node name="EyeLeft" type="MeshInstance3D" parent="." unique_id=1696106820]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.18, 0.15, 0.42)
 mesh = SubResource("SphereMesh_eye")
 surface_material_override/0 = SubResource("ShaderMaterial_eyes")
 
-[node name="EyeRight" type="MeshInstance3D" parent="."]
+[node name="EyeRight" type="MeshInstance3D" parent="." unique_id=1980177513]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.18, 0.15, 0.42)
 mesh = SubResource("SphereMesh_eye")
 surface_material_override/0 = SubResource("ShaderMaterial_eyes")
 
-[node name="SymbioteAura" type="GPUParticles3D" parent="."]
+[node name="SymbioteAura" type="GPUParticles3D" parent="." unique_id=1401035172]
+sub_emitter = NodePath(".")
 script = ExtResource("5")
 
-[node name="Tendrils" type="GPUParticles3D" parent="."]
+[node name="Tendrils" type="GPUParticles3D" parent="." unique_id=2124174586]
+sub_emitter = NodePath(".")
 script = ExtResource("6")

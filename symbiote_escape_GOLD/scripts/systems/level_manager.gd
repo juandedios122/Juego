@@ -206,6 +206,7 @@ func _wire_signals() -> void:
 		Alarm.level_changed.connect(_on_alarm_changed_hud)
 
 func _on_passive_gained_notify(ability_name: String) -> void:
+	pass
 	# if _hud_node and _hud_node.has_method("show_absorb_notification"):
 	# 	_hud_node.show_absorb_notification(ability_name)
 
@@ -228,6 +229,7 @@ func _on_absorb_changed(c: int) -> void:
 			_hud_node.update_objetivo("Encuentra la salida")
 
 func _on_alarm_changed_hud(lvl: int) -> void:
+	pass
 	# if _hud_node and _hud_node.has_method("update_alarm"):
 	# 	_hud_node.update_alarm(lvl)
 

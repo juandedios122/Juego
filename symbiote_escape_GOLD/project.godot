@@ -39,7 +39,7 @@ lights_and_shadows/use_physical_light_units=true
 lights_and_shadows/directional_shadow_size=4096
 gi/gi_probes_quality=2
 textures/default_filters/use_nearest_mipmap_filter=false
-anti_aliasing/quality/msaa_3d=4
+anti_aliasing/quality/msaa_3d=3
 
 [input]
 
