@@ -147,11 +147,20 @@ func _pulse_lights() -> void:
 	# Seleccionamos cada N-ésima luz para tener máximo MAX_ANIMATED_LIGHTS.
 	var total  := _lights.size()
 	var step   := maxi(1, total / MAX_ANIMATED_LIGHTS as int)
-	_ltween = create_tween().set_loops()
+	# Crear el tween SIN loops todavía — set_loops() solo si hay tweeners
+	_ltween = create_tween()
+	var tweener_count := 0
 	for i in range(0, total, step):
 		if not is_instance_valid(_lights[i]): continue
 		_ltween.tween_property(_lights[i], "light_color", col, sp)
 		_ltween.tween_property(_lights[i], "light_color", dim, sp)
+		tweener_count += 1
+	# Si no se añadió ningún tweener válido, matar el tween vacío
+	if tweener_count == 0:
+		_ltween.kill()
+		_ltween = null
+		return
+	_ltween.set_loops()
 
 func _level_color() -> Color:
 	match current:

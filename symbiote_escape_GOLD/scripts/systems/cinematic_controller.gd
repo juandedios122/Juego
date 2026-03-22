@@ -163,4 +163,5 @@ func _skip() -> void:
 	var tw := create_tween()
 	tw.tween_property(_bg, "color", Color(0.0, 0.0, 0.0, 1.0), 0.35)
 	await tw.finished
-	GM.go_to_level()
+	if is_instance_valid(self):
+		GM.go_to_level()

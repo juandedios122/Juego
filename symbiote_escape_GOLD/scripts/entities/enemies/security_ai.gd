@@ -187,8 +187,8 @@ func _do_chase(delta: float, pl: Node) -> void:
 			state = State.ATTACK; return
 		var spd := Constants.GUARD_SPEED_LOCKDOWN if _alarm_level >= 3 else Constants.GUARD_SPEED_CHASE
 		# Flanqueo: desplazarse lateralmente mientras persigue
-		var to_pl := (pl.global_position - global_position).normalized()
-		var flank  := to_pl.cross(Vector3.UP).normalized() * _flank_side * Constants.GUARD_FLANK_OFFSET * 0.3
+		var to_pl : Vector3 = (pl.global_position - global_position).normalized()
+		var flank  : Vector3 = to_pl.cross(Vector3.UP).normalized() * _flank_side * Constants.GUARD_FLANK_OFFSET * 0.3
 		_move_to(pl.global_position + flank, spd)
 		# Compartir posición con otros guards cercanos
 		_radio_position(pl.global_position)
@@ -203,7 +203,7 @@ func _do_attack(pl: Node) -> void:
 	if pl == null or not is_instance_valid(pl): state = State.CHASE; return
 	var dist := global_position.distance_to(pl.global_position)
 	if dist > Constants.GUARD_ATTACK_RANGE * 1.6: state = State.CHASE; return
-	var to := pl.global_position - global_position; to.y = 0.0
+	var to : Vector3 = pl.global_position - global_position; to.y = 0.0
 	if to.length_squared() > 0.01: look_at(global_position + to.normalized(), Vector3.UP)
 	velocity.x = 0.0; velocity.z = 0.0
 	if _atk_timer <= 0.0 and pl.has_method("take_damage"):
@@ -256,8 +256,8 @@ func _scan_for_player(pl: Node) -> void:
 			_sus_timer = minf(_sus_timer, 0.3)
 
 func _can_see_player(pl: Node) -> bool:
-	var to_pl := pl.global_position - global_position
-	var dist  := to_pl.length()
+	var to_pl : Vector3 = pl.global_position - global_position
+	var dist  : float   = to_pl.length()
 	if dist < 2.0: return true
 	if _ab_sys and is_instance_valid(_ab_sys) and _ab_sys.has_passive("SIGILO"): return false
 	var fov_dist  := Constants.GUARD_FOV_DISTANCE_ALARM if _alarm_level >= 2 else Constants.GUARD_FOV_DISTANCE
@@ -329,7 +329,7 @@ func _update_sentido_ring(delta: float) -> void:
 	if _sentido_t > 0.0: return
 	_sentido_t = 0.5
 	if _sentido_ring:
-		var has_sentido := _ab_sys != null and is_instance_valid(_ab_sys) and _ab_sys.has_passive("SENTIDO")
+		var has_sentido : bool = _ab_sys != null and is_instance_valid(_ab_sys) and _ab_sys.has_passive("SENTIDO")
 		_sentido_ring.visible = has_sentido
 
 func stun(duration: float) -> void:

@@ -196,7 +196,7 @@ func _do_panic(delta: float, pl: Node) -> void:
 func _do_flee(delta: float, pl: Node) -> void:
 	if pl == null: state = State.PATROL; return
 	var dist := global_position.distance_to(pl.global_position)
-	var away := (global_position - pl.global_position).normalized()
+	var away : Vector3 = (global_position - pl.global_position).normalized()
 	_move_toward(global_position + away * 6.0, Constants.WORKER_SPEED_FLEE, delta)
 	if dist >= Constants.WORKER_HIDE_DIST:
 		if _alarm_level >= 2:  # ALARMA
@@ -234,8 +234,8 @@ func _call_nearby_guards() -> void:
 func _scan_for_player(pl: Node) -> void:
 	if state == State.BEING_ABSORBED or state == State.ABSORBED: return
 	if pl == null: return
-	var to_pl := pl.global_position - global_position
-	var dist  := to_pl.length()
+	var to_pl : Vector3 = pl.global_position - global_position
+	var dist  : float   = to_pl.length()
 	var has_stealth := _player_has_stealth(pl)
 	if dist < 2.0:
 		_trigger_flee(pl); return

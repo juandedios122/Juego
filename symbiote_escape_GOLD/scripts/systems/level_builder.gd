@@ -284,3 +284,165 @@ func alert_strip(origin: Vector3, count: int, step: float, is_x: bool) -> void:
 		lt.omni_range   = 4.2
 		_parent.add_child(lt)
 		Alarm.register_light(lt)
+
+# ─────────────────────────────────────────────────────────
+# NUEVOS MÉTODOS v10 — Gráficos mejorados e interactividad
+# ─────────────────────────────────────────────────────────
+
+## Terminal interactivo — el jugador puede activarlo para revelar el mapa o ganar XP.
+func interactive_terminal(pos: Vector3, col: Color, xp_reward: int) -> void:
+	# Cuerpo físico
+	var body := StaticBody3D.new()
+	body.position = pos
+	var mi := MeshInstance3D.new()
+	var bm := BoxMesh.new(); bm.size = Vector3(0.6, 1.2, 0.3)
+	mi.mesh = bm
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color               = Color(0.08, 0.10, 0.14, 1.0)
+	mat.metallic                   = 0.7; mat.roughness = 0.2
+	mat.emission_enabled           = true
+	mat.emission                   = col * 0.4
+	mat.emission_energy_multiplier = 1.2
+	mi.material_override = mat
+	body.add_child(mi)
+	var cs := CollisionShape3D.new()
+	var bs := BoxShape3D.new(); bs.size = Vector3(0.6, 1.2, 0.3)
+	cs.shape = bs; body.add_child(cs)
+	_parent.add_child(body)
+	# Pantalla emisiva
+	var screen := MeshInstance3D.new()
+	var sm := BoxMesh.new(); sm.size = Vector3(0.44, 0.32, 0.02)
+	screen.mesh = sm; screen.position = pos + Vector3(0.0, 0.25, -0.16)
+	var smat := StandardMaterial3D.new()
+	smat.albedo_color               = col * 0.15
+	smat.emission_enabled           = true
+	smat.emission                   = col
+	smat.emission_energy_multiplier = 3.5
+	screen.material_override = smat
+	_parent.add_child(screen)
+	# Luz de pantalla
+	var lt := OmniLight3D.new()
+	lt.position     = pos + Vector3(0.0, 0.25, -0.5)
+	lt.light_color  = col
+	lt.light_energy = 1.2; lt.omni_range = 3.5
+	_parent.add_child(lt)
+	# Zona de interacción
+	var area := Area3D.new()
+	area.position = pos
+	var acs := CollisionShape3D.new()
+	var abs_ := SphereShape3D.new(); abs_.radius = 1.8
+	acs.shape = abs_; area.add_child(acs)
+	_parent.add_child(area)
+	var _used := false
+	var mat_ref := smat; var lt_ref := lt; var xp := xp_reward
+	# Dar XP al entrar en el área (sin necesidad de presionar tecla)
+	area.body_entered.connect(func(body2: Node) -> void:
+		if _used or not body2.is_in_group("player"): return
+		_used = true
+		ProgressionMgr.add_xp(xp)
+		AudioMgr.play_door_unlock()
+		mat_ref.emission = Color(0.2, 1.0, 0.4, 1.0)
+		mat_ref.emission_energy_multiplier = 6.0
+		lt_ref.light_color = Color(0.2, 1.0, 0.4, 1.0)
+		lt_ref.light_energy = 3.0
+	)
+
+## Tubo de vapor decorativo con partículas.
+func steam_pipe(pos: Vector3, height: float) -> void:
+	# Tubo vertical
+	var body := StaticBody3D.new()
+	body.position = pos
+	var mi := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius = 0.12; cm.bottom_radius = 0.14; cm.height = height
+	mi.mesh = cm; mi.position = Vector3(0.0, height * 0.5, 0.0)
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.35, 0.38, 0.42, 1.0)
+	mat.metallic = 0.85; mat.roughness = 0.25
+	mi.material_override = mat; body.add_child(mi)
+	var cs := CollisionShape3D.new()
+	var cy := CylinderShape3D.new(); cy.radius = 0.14; cy.height = height
+	cs.shape = cy; cs.position = Vector3(0.0, height * 0.5, 0.0)
+	body.add_child(cs); _parent.add_child(body)
+	# Partículas de vapor
+	var pts := CPUParticles3D.new()
+	pts.emitting = true; pts.amount = 18; pts.lifetime = 1.8
+	pts.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	pts.emission_sphere_radius = 0.08
+	pts.gravity = Vector3(0.0, 1.2, 0.0)
+	pts.initial_velocity_min = 0.3; pts.initial_velocity_max = 0.9
+	pts.scale_amount_min = 0.08; pts.scale_amount_max = 0.28
+	pts.color = Color(0.85, 0.88, 0.92, 0.35)
+	pts.position = pos + Vector3(0.0, height + 0.1, 0.0)
+	_parent.add_child(pts)
+
+## Caja de fusibles con luz parpadeante.
+func fuse_box(pos: Vector3) -> void:
+	slab(pos, Vector3(0.5, 0.7, 0.12), Color(0.22, 0.22, 0.26, 1.0))
+	var lt := OmniLight3D.new()
+	lt.position     = pos + Vector3(0.0, 0.0, -0.3)
+	lt.light_color  = Color(1.0, 0.6, 0.1, 1.0)
+	lt.light_energy = 0.8; lt.omni_range = 2.2
+	_parent.add_child(lt)
+	Alarm.register_light(lt)
+
+## Suelo con rejilla metálica (visual mejorado).
+func metal_grate_floor(pos: Vector3, size_xz: Vector2) -> void:
+	var mi := MeshInstance3D.new()
+	var bm := BoxMesh.new(); bm.size = Vector3(size_xz.x, 0.05, size_xz.y)
+	mi.mesh = bm; mi.position = pos + Vector3(0.0, 0.025, 0.0)
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.18, 0.20, 0.24, 1.0)
+	mat.metallic = 0.9; mat.roughness = 0.3
+	mat.emission_enabled = true
+	mat.emission = Color(0.05, 0.08, 0.12, 1.0)
+	mat.emission_energy_multiplier = 0.5
+	mi.material_override = mat
+	_parent.add_child(mi)
+
+## Barril de residuos radiactivos.
+func waste_barrel(pos: Vector3) -> void:
+	var body := StaticBody3D.new()
+	body.position = pos
+	var mi := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius = 0.28; cm.bottom_radius = 0.30; cm.height = 0.72
+	mi.mesh = cm; mi.position = Vector3(0.0, 0.36, 0.0)
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.55, 0.48, 0.08, 1.0)
+	mat.metallic = 0.5; mat.roughness = 0.6
+	mat.emission_enabled = true
+	mat.emission = Color(0.2, 0.8, 0.1, 1.0)
+	mat.emission_energy_multiplier = 0.8
+	mi.material_override = mat; body.add_child(mi)
+	var cs := CollisionShape3D.new()
+	var cy := CylinderShape3D.new(); cy.radius = 0.30; cy.height = 0.72
+	cs.shape = cy; cs.position = Vector3(0.0, 0.36, 0.0)
+	body.add_child(cs); _parent.add_child(body)
+	# Glow verde radiactivo
+	var lt := OmniLight3D.new()
+	lt.position = pos + Vector3(0.0, 0.8, 0.0)
+	lt.light_color = Color(0.1, 1.0, 0.2, 1.0)
+	lt.light_energy = 0.9; lt.omni_range = 2.8
+	lt.light_volumetric_fog_energy = 0.5
+	_parent.add_child(lt)
+
+## Cámara de seguridad decorativa en pared/techo.
+func security_camera(pos: Vector3, look_dir: Vector3) -> void:
+	var mi := MeshInstance3D.new()
+	var bm := BoxMesh.new(); bm.size = Vector3(0.18, 0.14, 0.28)
+	mi.mesh = bm; mi.position = pos
+	if look_dir.length_squared() > 0.01:
+		mi.look_at(pos + look_dir, Vector3.UP)
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.12, 0.12, 0.15, 1.0)
+	mat.metallic = 0.7; mat.roughness = 0.3
+	mi.material_override = mat
+	_parent.add_child(mi)
+	# LED rojo parpadeante
+	var led := OmniLight3D.new()
+	led.position = pos + look_dir.normalized() * 0.15
+	led.light_color = Color(1.0, 0.05, 0.0, 1.0)
+	led.light_energy = 0.6; led.omni_range = 1.2
+	_parent.add_child(led)
+	Alarm.register_light(led)

@@ -40,7 +40,7 @@ func _build() -> void:
 		_particles.append(r)
 
 	# Panel central de stats
-	var SPX := 560; var SPY := 280; var SPW := 800; var SPH := 420
+	var SPX := 560; var SPY := 260; var SPW := 800; var SPH := 460
 	_cr(_root, Vector2(SPX, SPY), Vector2(SPW, SPH), Color(0.06, 0.02, 0.02, 0.92))
 	_cr(_root, Vector2(SPX, SPY), Vector2(SPW, 3), COL_RED)
 	_cr(_root, Vector2(SPX, SPY + SPH), Vector2(SPW, 1), Color(0.3, 0.05, 0.02, 0.5))
@@ -72,10 +72,25 @@ func _build() -> void:
 			_cr(_root, Vector2(SPX + 48, sy + 36), Vector2(SPW - 96, 1),
 				Color(0.12, 0.04, 0.03, 1.0))
 
+	# Hint contextual según progreso
+	var hint := ""
+	if abs_count == 0:
+		hint = "Consejo: Usa [E] cerca de un enemigo para absorberlo"
+	elif abs_count < 2:
+		hint = "Consejo: Necesitas 2 absorciones para abrir ARCHIVO"
+	elif abs_count < 3:
+		hint = "Consejo: Necesitas 3 absorciones para abrir CÁMARA FRÍA"
+	else:
+		hint = "Consejo: Con 3+ absorciones puedes llegar a la SALIDA"
+	if hint != "":
+		_cr(_root, Vector2(SPX + 48, SPY + 310), Vector2(SPW - 96, 1), Color(0.18, 0.06, 0.04, 1.0))
+		_lbl(_root, Vector2(SPX + 48, SPY + 316), Vector2(SPW - 96, 20),
+			hint, 12, Color(0.9, 0.72, 0.3, 0.9), HORIZONTAL_ALIGNMENT_CENTER)
+
 	# Botones
-	_btn("INTENTAR DE NUEVO", SPX + 48, SPY + 330,
+	_btn("INTENTAR DE NUEVO", SPX + 48, SPY + 342,
 		(SPW - 96) / 2 - 6, Color(0.08, 0.18, 0.08, 1.0), Color(0.2, 1.0, 0.4), GM.go_to_cinematic)
-	_btn("MENÚ PRINCIPAL", SPX + 48 + (SPW - 96) / 2 + 6, SPY + 330,
+	_btn("MENÚ PRINCIPAL", SPX + 48 + (SPW - 96) / 2 + 6, SPY + 342,
 		(SPW - 96) / 2 - 6, Color(0.18, 0.06, 0.04, 1.0), COL_RED, GM.go_to_menu)
 
 func _btn(txt: String, x: float, y: float, w: float, bg: Color, fg: Color, cb: Callable) -> void:

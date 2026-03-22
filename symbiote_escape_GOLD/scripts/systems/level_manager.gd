@@ -114,11 +114,9 @@ func _spawn_player() -> void:
 
 func _generate_level() -> void:
 	if _level_geo == null: return
-	var gen := load("res://scripts/systems/level_generator.gd").new() as Node3D
-	if gen == null: return
-	_level_geo.add_child(gen)
-	gen.generate()
-	gen.exit_reached.connect(_on_exit_reached)
+	# _level_geo ya tiene level_generator.gd como script (asignado en la escena)
+	_level_geo.generate()
+	_level_geo.exit_reached.connect(_on_exit_reached)
 
 func _spawn_enemies() -> void:
 	if _enemies == null: return

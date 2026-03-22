@@ -81,9 +81,10 @@ func _refresh_alarm_bar(level: int) -> void:
 	if _alarm_line: _alarm_line.color = col
 	if _dot_tween: _dot_tween.kill()
 	if level >= 2:
-		_dot_tween = create_tween().set_loops()
+		_dot_tween = create_tween()
 		_dot_tween.tween_property(_alarm_dot, "modulate:a", 0.1, 0.28)
 		_dot_tween.tween_property(_alarm_dot, "modulate:a", 1.0, 0.28)
+		_dot_tween.set_loops()
 	else:
 		_alarm_dot.modulate.a = 1.0
 	_alarm_bar.color = Color(0.20, 0.02, 0.02, 0.96) if level == 3 else BG_DARK
@@ -110,15 +111,31 @@ func _build_xp_panel() -> void:
 	_xp_fill  = _rect(_root, Vector2(PX+10,PY+30), Vector2(0,10), COL_XP)
 	_lvl_badge = _lbl(_root, Vector2(PX+10,PY+6), Vector2(PW-20,18), "NIV. 1", 11, COL_XP)
 
+var _door_bars   : Array = []   # [fill_archivo, fill_camara]
+var _door_labels : Array = []   # [lbl_archivo, lbl_camara]
+
 func _build_abs_panel() -> void:
-	var PX := 18; var PY := 198; var PW := 238; var PH := 70
+	var PX := 18; var PY := 198; var PW := 238; var PH := 118
 	_rect(_root, Vector2(PX,PY), Vector2(PW,PH), BG_PANEL)
 	_rect(_root, Vector2(PX,PY), Vector2(3,PH), COL_ABS)
 	_lbl(_root, Vector2(PX+10,PY+7), Vector2(160,16), "ABSORCIONES", 11, COL_MUTED)
-	_abs_num   = _lbl(_root, Vector2(PX+8,PY+24), Vector2(PW-16,36), "0", 32, COL_ABS)
+	_abs_num   = _lbl(_root, Vector2(PX+8,PY+22), Vector2(PW-16,32), "0", 28, COL_ABS)
 	# Pulso al absorber
 	_abs_pulse = _rect(_root, Vector2(PX,PY), Vector2(PW,PH), Color(COL_ABS.r, COL_ABS.g, COL_ABS.b, 0.0))
-	_lbl(_root, Vector2(PX+10,PY+52), Vector2(PW-12,14), "NECESITAS: 2 ARCHIVO  3 CAMARA", 9, COL_MUTED)
+	# ── Barras de progreso de puertas ──────────────────────
+	var BAR_W := PW - 20
+	# Puerta ARCHIVO (requiere 2)
+	_lbl(_root, Vector2(PX+10,PY+58), Vector2(BAR_W,13), "ARCHIVO", 9, COL_MUTED)
+	_rect(_root, Vector2(PX+10,PY+72), Vector2(BAR_W,8), Color(0.06,0.06,0.06,1.0))
+	var fill_a := _rect(_root, Vector2(PX+10,PY+72), Vector2(0,8), Color(0.9,0.55,0.0,1.0))
+	var lbl_a  := _lbl(_root, Vector2(PX+10,PY+58), Vector2(BAR_W,13), "0 / 2", 9, Color(0.9,0.55,0.0,1.0), HORIZONTAL_ALIGNMENT_RIGHT)
+	# Puerta CÁMARA FRÍA (requiere 3)
+	_lbl(_root, Vector2(PX+10,PY+84), Vector2(BAR_W,13), "CÁMARA FRÍA", 9, COL_MUTED)
+	_rect(_root, Vector2(PX+10,PY+98), Vector2(BAR_W,8), Color(0.06,0.06,0.06,1.0))
+	var fill_c := _rect(_root, Vector2(PX+10,PY+98), Vector2(0,8), Color(0.1,0.5,1.0,1.0))
+	var lbl_c  := _lbl(_root, Vector2(PX+10,PY+84), Vector2(BAR_W,13), "0 / 3", 9, Color(0.1,0.5,1.0,1.0), HORIZONTAL_ALIGNMENT_RIGHT)
+	_door_bars   = [fill_a, fill_c]
+	_door_labels = [lbl_a, lbl_c]
 
 func _build_crosshair() -> void:
 	var cx := 960.0; var cy := 540.0; var col := Color(1.0,1.0,1.0,0.55)
@@ -178,9 +195,11 @@ func _build_threat_indicator() -> void:
 		_root.add_child(ar); _threat_arrows.append(ar)
 
 func _build_objective_label() -> void:
-	_objective_lbl = _lbl(_root, Vector2(0, 42), Vector2(1920, 20),
-		"▶  OBJETIVO: Llega a la ZONA DE SALIDA (norte)",
-		11, Color(0.65, 0.88, 0.65, 0.65), HORIZONTAL_ALIGNMENT_CENTER)
+	# Fondo semitransparente para el objetivo
+	_rect(_root, Vector2(560, 40), Vector2(800, 26), Color(0.02, 0.04, 0.02, 0.75))
+	_objective_lbl = _lbl(_root, Vector2(560, 42), Vector2(800, 22),
+		"▶  ABSORBE 2 enemigos para abrir ARCHIVO",
+		12, Color(0.9, 0.72, 0.3, 0.9), HORIZONTAL_ALIGNMENT_CENTER)
 
 func _build_absorb_notification() -> void:
 	_absorb_notif = _lbl(_root, Vector2(760, 515), Vector2(400, 36),
@@ -220,6 +239,8 @@ func _connect_signals() -> void:
 	ProgressionMgr.xp_changed.connect(_on_xp)
 	ProgressionMgr.level_up.connect(_on_level_up)
 	GM.player_health_changed.connect(_on_health_for_heartbeat)
+	# Inicializar barras y objetivo con estado actual
+	update_absorptions(GM.absorption_count)
 
 func _on_health_for_heartbeat(hp: float, max_hp: float) -> void:
 	AudioMgr.set_heartbeat(hp / max_hp)
@@ -247,6 +268,53 @@ func update_absorptions(count: int) -> void:
 		var tw := create_tween()
 		tw.tween_property(_abs_pulse, "color:a", 0.55, 0.06)
 		tw.tween_property(_abs_pulse, "color:a", 0.0, 0.35)
+	# ── Barras de progreso de puertas ──────────────────────
+	_update_door_bars(count)
+	# ── Objetivo dinámico ──────────────────────────────────
+	_update_objective(count)
+
+func _update_door_bars(count: int) -> void:
+	if _door_bars.is_empty(): return
+	var reqs := [Constants.DOOR_REQ_ARCHIVO, Constants.DOOR_REQ_CAMARA_FRIA]
+	var cols_open  := [Color(0.2, 1.0, 0.4, 1.0), Color(0.2, 1.0, 0.4, 1.0)]
+	var cols_close := [Color(0.9, 0.55, 0.0, 1.0), Color(0.1, 0.5, 1.0, 1.0)]
+	var bar_w := 218.0
+	for i in 2:
+		var req  : int       = reqs[i]
+		var fill : ColorRect = _door_bars[i] as ColorRect
+		var lbl  : Label     = _door_labels[i] as Label
+		var frac := clampf(float(count) / float(req), 0.0, 1.0)
+		fill.size.x = bar_w * frac
+		var is_open := count >= req
+		var col : Color = cols_open[i] if is_open else cols_close[i]
+		fill.color = col
+		lbl.text = ("✓ ABIERTA" if is_open else "%d / %d" % [mini(count, req), req])
+		lbl.add_theme_color_override("font_color", col)
+		# Notificación al desbloquear
+		if is_open and count == req:
+			_show_door_unlocked(["ARCHIVO", "CÁMARA FRÍA"][i], cols_close[i])
+
+func _show_door_unlocked(door_name: String, col: Color) -> void:
+	var lbl := _lbl(_root, Vector2(660, 480), Vector2(600, 44),
+		"🔓  PUERTA %s DESBLOQUEADA" % door_name, 22, col, HORIZONTAL_ALIGNMENT_CENTER)
+	lbl.modulate.a = 0.0
+	var tw := create_tween()
+	tw.tween_property(lbl, "modulate:a", 1.0, 0.18)
+	tw.tween_interval(2.2)
+	tw.tween_property(lbl, "modulate:a", 0.0, 0.6)
+	tw.tween_callback(lbl.queue_free)
+
+func _update_objective(count: int) -> void:
+	if _objective_lbl == null: return
+	if count < Constants.DOOR_REQ_ARCHIVO:
+		_objective_lbl.text = "▶  ABSORBE %d enemigo(s) más para abrir ARCHIVO" % (Constants.DOOR_REQ_ARCHIVO - count)
+		_objective_lbl.add_theme_color_override("font_color", Color(0.9, 0.72, 0.3, 0.85))
+	elif count < Constants.DOOR_REQ_CAMARA_FRIA:
+		_objective_lbl.text = "▶  ABSORBE %d enemigo(s) más para abrir CÁMARA FRÍA" % (Constants.DOOR_REQ_CAMARA_FRIA - count)
+		_objective_lbl.add_theme_color_override("font_color", Color(0.4, 0.7, 1.0, 0.85))
+	else:
+		_objective_lbl.text = "▶  OBJETIVO: Llega a la ZONA DE SALIDA (norte)"
+		_objective_lbl.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5, 0.85))
 
 func update_alarm(level: int) -> void:
 	if level == _last_alarm: return

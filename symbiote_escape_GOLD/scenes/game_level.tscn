@@ -12,5 +12,4 @@ script = ExtResource("2")
 
 [node name="Enemies" type="Node3D" parent="."]
 
-[node name="HUD" type="CanvasLayer" parent="."]
-script = ExtResource("3")
+[node name="HUD" parent="." instance=ExtResource("3")]

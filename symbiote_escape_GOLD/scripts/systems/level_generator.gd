@@ -74,22 +74,23 @@ func _setup_environment() -> void:
 	# Bloom fuerte para sensación eléctrica/nuclear
 	env.glow_enabled           = true
 	env.glow_normalized        = false
-	env.glow_intensity         = 1.0
-	env.glow_strength          = 1.2
-	env.glow_bloom             = 0.22
+	env.glow_intensity         = 1.4
+	env.glow_strength          = 1.6
+	env.glow_bloom             = 0.30
 	env.glow_blend_mode        = Environment.GLOW_BLEND_MODE_ADDITIVE
-	env.set("glow_levels/1", 0.75)
-	env.set("glow_levels/2", 0.80)
-	env.set("glow_levels/3", 0.40)
+	env.set("glow_levels/1", 0.85)
+	env.set("glow_levels/2", 0.90)
+	env.set("glow_levels/3", 0.55)
+	env.set("glow_levels/4", 0.30)
 	# Fog volumétrico para atmósfera densa
 	env.volumetric_fog_enabled       = true
-	env.volumetric_fog_density       = 0.018
-	env.volumetric_fog_albedo        = Color(0.05, 0.06, 0.10, 1.0)
-	env.volumetric_fog_emission      = Color(0.0, 0.0, 0.0, 1.0)
-	env.volumetric_fog_gi_inject     = 1.0
-	env.volumetric_fog_anisotropy    = 0.3
-	env.volumetric_fog_length        = 64.0
-	env.volumetric_fog_detail_spread = 2.0
+	env.volumetric_fog_density       = 0.022
+	env.volumetric_fog_albedo        = Color(0.04, 0.06, 0.10, 1.0)
+	env.volumetric_fog_emission      = Color(0.01, 0.02, 0.04, 1.0)
+	env.volumetric_fog_gi_inject     = 1.2
+	env.volumetric_fog_anisotropy    = 0.4
+	env.volumetric_fog_length        = 72.0
+	env.volumetric_fog_detail_spread = 2.5
 	# Ajuste de color — film noir / sci-fi verde
 	env.adjustment_enabled    = true
 	env.adjustment_brightness = 1.0
@@ -300,6 +301,27 @@ func _build_props() -> void:
 		_b.slab(Vector3(lx, 1.0, 22.0), Vector3(1.2, 2.0, 0.5), Color(0.28,0.28,0.32,1.0))
 	_b.cylinder_prop(Vector3(3, 0.6, -46), 0.35, 1.3, Color(0.22,0.48,0.48,1.0))
 	_b.cylinder_prop(Vector3(-3, 0.6, -52), 0.35, 1.3, Color(0.22,0.48,0.48,1.0))
+	# ── Nuevos props v10 ──────────────────────────────────
+	# Barriles de residuos
+	for bp2 in [Vector3(26,0,-44), Vector3(28,0,-44), Vector3(26,0,-48), Vector3(-26,0,-44)]:
+		_b.waste_barrel(bp2)
+	# Tubos de vapor en corredores
+	_b.steam_pipe(Vector3(4.5, 0, -5),  3.5)
+	_b.steam_pipe(Vector3(-4.5, 0, -5), 3.5)
+	_b.steam_pipe(Vector3(28, 0, -10),  3.8)
+	_b.steam_pipe(Vector3(-28, 0, -10), 3.8)
+	# Cajas de fusibles
+	_b.fuse_box(Vector3(6.8, 1.2, 9.0))
+	_b.fuse_box(Vector3(-6.8, 1.2, 9.0))
+	_b.fuse_box(Vector3(6.8, 1.2, -28.0))
+	# Suelos metálicos en zonas clave
+	_b.metal_grate_floor(Vector3(0, 0, -46), Vector2(8.0, 8.0))
+	_b.metal_grate_floor(Vector3(0, 0, -60), Vector2(10.0, 10.0))
+	# Cámaras de seguridad
+	_b.security_camera(Vector3(0, WH - 0.3, 9.0),   Vector3(0, -1, 1).normalized())
+	_b.security_camera(Vector3(0, WH - 0.3, -28.0), Vector3(0, -1, -1).normalized())
+	_b.security_camera(Vector3(28, WH - 0.3, -8.0), Vector3(-1, -1, 0).normalized())
+	_b.security_camera(Vector3(-28, WH - 0.3, -8.0),Vector3(1, -1, 0).normalized())
 
 func _build_xp_orbs() -> void:
 	_b.xp_orb(Vector3(26, 0.8, 22),  Constants.XP_ORB_SMALL)
@@ -309,6 +331,12 @@ func _build_xp_orbs() -> void:
 	_b.xp_orb(Vector3(-30, 0.8, -20), Constants.XP_ORB_LARGE)
 	_b.xp_orb(Vector3(30, 0.8, -20),  Constants.XP_ORB_LARGE)
 	_b.xp_orb(Vector3(30, 0.8, -46),  Constants.XP_ORB_LARGE)
+	# ── Terminales interactivos (E para activar, dan XP) ──
+	_b.interactive_terminal(Vector3(-3.5, 0, -20), Color(0.2, 0.8, 1.0), 80)
+	_b.interactive_terminal(Vector3(3.5, 0, -20),  Color(0.2, 0.8, 1.0), 80)
+	_b.interactive_terminal(Vector3(0, 0, -58),    Color(0.2, 1.0, 0.5), 120)
+	_b.interactive_terminal(Vector3(28, 0, 4),     Color(0.8, 0.4, 1.0), 60)
+	_b.interactive_terminal(Vector3(-28, 0, 4),    Color(0.8, 0.4, 1.0), 60)
 
 # ── Detalles atmosféricos ─────────────────────────────────
 func _build_atmospheric_details() -> void:

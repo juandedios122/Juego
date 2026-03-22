@@ -1,6 +1,6 @@
 extends Node
 ## ProgressionMgr — XP, niveles y poder global del simbionte.
-## Autoload persistente entre sesiones.
+## Ahora lee/escribe desde el slot activo de SaveMgr.
 
 signal xp_changed(xp_in_level: int, xp_to_next: int, total_xp: int)
 signal level_up(new_level: int)
@@ -10,7 +10,19 @@ var total_xp      : int = 0
 var xp_in_level   : int = 0
 
 func _ready() -> void:
-	_load()
+	pass   # La carga se hace en load_from_slot(), llamado por GM al seleccionar slot.
+
+# ── Carga/guardado por slot ───────────────────────────────
+
+func load_from_slot() -> void:
+	current_level = int(SaveMgr.get_val("player_level", 1))
+	total_xp      = int(SaveMgr.get_val("player_total_xp", 0))
+	xp_in_level   = total_xp - _xp_for_level(current_level)
+	xp_in_level   = maxi(0, xp_in_level)
+
+func _save() -> void:
+	SaveMgr.set_val("player_level",    current_level)
+	SaveMgr.set_val("player_total_xp", total_xp)
 
 # ── API pública ──────────────────────────────────────────
 
@@ -29,14 +41,12 @@ func add_xp(amount: int) -> void:
 	xp_changed.emit(xp_in_level, get_xp_to_next(), total_xp)
 
 func get_xp_fraction() -> float:
-	if current_level >= Constants.MAX_LEVEL:
-		return 1.0
+	if current_level >= Constants.MAX_LEVEL: return 1.0
 	var needed := get_xp_to_next()
 	return float(xp_in_level) / float(needed) if needed > 0 else 1.0
 
 func get_xp_to_next() -> int:
-	if current_level >= Constants.MAX_LEVEL:
-		return 1
+	if current_level >= Constants.MAX_LEVEL: return 1
 	var thresholds : Array = Constants.LEVEL_XP
 	if current_level < thresholds.size():
 		return int(thresholds[current_level]) - int(thresholds[current_level - 1])
@@ -62,17 +72,12 @@ func get_unlock_level(skill_id: String) -> int:
 		"CAMUFLAJE": return Constants.SKILL_CAMO_UNLOCK
 	return 99
 
-# ── Persistencia ─────────────────────────────────────────
+func reset() -> void:
+	current_level = 1
+	total_xp      = 0
+	xp_in_level   = 0
 
-func _load() -> void:
-	current_level = int(SaveMgr.get_val("player_level", 1))
-	total_xp      = int(SaveMgr.get_val("player_total_xp", 0))
-	xp_in_level   = total_xp - _xp_for_level(current_level)
-	xp_in_level   = maxi(0, xp_in_level)
-
-func _save() -> void:
-	SaveMgr.set_val("player_level",    current_level)
-	SaveMgr.set_val("player_total_xp", total_xp)
+# ── Privado ───────────────────────────────────────────────
 
 func _xp_for_level(lv: int) -> int:
 	if lv <= 1: return 0
