@@ -76,9 +76,9 @@ func _build_ability_system() -> void:
 	_ab_sys = Node.new()
 	_ab_sys.set_script(load("res://scripts/entities/player/ability_system.gd"))
 	_ab_sys.name = "AbilitySystem"
+	add_child(_ab_sys)
 	_ab_sys.passive_gained.connect(_on_passive_gained)
 	_ab_sys.passive_lost.connect(_on_passive_lost)
-	add_child(_ab_sys)
 
 func _capture_cam_origin() -> void:
 	if _cam: _cam_origin = _cam.position

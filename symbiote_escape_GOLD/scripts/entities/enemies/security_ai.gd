@@ -185,7 +185,7 @@ func _do_chase(delta: float, pl: Node) -> void:
 		var dist := global_position.distance_to(pl.global_position)
 		if dist <= Constants.GUARD_ATTACK_RANGE:
 			state = State.ATTACK; return
-		var spd := Constants.GUARD_SPEED_LOCKDOWN if _alarm_level >= int(Alarm.Level.LOCKDOWN) else Constants.GUARD_SPEED_CHASE
+		var spd := Constants.GUARD_SPEED_LOCKDOWN if _alarm_level >= 3 else Constants.GUARD_SPEED_CHASE
 		# Flanqueo: desplazarse lateralmente mientras persigue
 		var to_pl := (pl.global_position - global_position).normalized()
 		var flank  := to_pl.cross(Vector3.UP).normalized() * _flank_side * Constants.GUARD_FLANK_OFFSET * 0.3
@@ -260,14 +260,14 @@ func _can_see_player(pl: Node) -> bool:
 	var dist  := to_pl.length()
 	if dist < 2.0: return true
 	if _ab_sys and is_instance_valid(_ab_sys) and _ab_sys.has_passive("SIGILO"): return false
-	var fov_dist  := Constants.GUARD_FOV_DISTANCE_ALARM if _alarm_level >= int(Alarm.Level.ALARMA) else Constants.GUARD_FOV_DISTANCE
+	var fov_dist  := Constants.GUARD_FOV_DISTANCE_ALARM if _alarm_level >= 2 else Constants.GUARD_FOV_DISTANCE
 	if dist > fov_dist: return false
-	var fov_angle := Constants.GUARD_FOV_ANGLE_ALARM if _alarm_level >= int(Alarm.Level.ALARMA) else Constants.GUARD_FOV_ANGLE
+	var fov_angle := Constants.GUARD_FOV_ANGLE_ALARM if _alarm_level >= 2 else Constants.GUARD_FOV_ANGLE
 	return (-global_transform.basis.z).angle_to(to_pl.normalized()) < fov_angle
 
 func _enter_suspicious(pl: Node) -> void:
 	state = State.SUSPICIOUS; last_known = pl.global_position
-	_sus_timer = 0.3 if _alarm_level >= int(Alarm.Level.ALARMA) else Constants.GUARD_SUSPICIOUS_TIME
+	_sus_timer = 0.3 if _alarm_level >= 2 else Constants.GUARD_SUSPICIOUS_TIME
 	_spot_color(Color(1.0, 0.5, 0.0, 1.0))
 	velocity.x = 0.0; velocity.z = 0.0
 	_search_sweep = 0.0
@@ -307,7 +307,7 @@ func _resume_from_stun() -> void:
 
 func _on_alarm_changed(lv: int) -> void:
 	_alarm_level = lv
-	if lv >= int(Alarm.Level.ALARMA) and state == State.PATROL and not _is_alerted:
+	if lv >= 2 and state == State.PATROL and not _is_alerted:
 		if Alarm.last_noise_pos != Vector3.ZERO:
 			_investigate_pos   = Alarm.last_noise_pos
 			_investigate_timer = Constants.GUARD_INVESTIGATE_TIME
@@ -315,7 +315,7 @@ func _on_alarm_changed(lv: int) -> void:
 			_spot_color(Color(1.0, 0.7, 0.0, 1.0))
 	# Actualizar rango del spot según nivel de alarma
 	if _spot:
-		_spot.spot_range = Constants.GUARD_FOV_DISTANCE_ALARM if lv >= int(Alarm.Level.ALARMA) else Constants.GUARD_FOV_DISTANCE
+		_spot.spot_range = Constants.GUARD_FOV_DISTANCE_ALARM if lv >= 2 else Constants.GUARD_FOV_DISTANCE
 
 func _on_noise_reported(pos: Vector3) -> void:
 	if (state == State.PATROL or state == State.RETURNING) and not _is_alerted:

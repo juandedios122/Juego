@@ -199,7 +199,7 @@ func _do_flee(delta: float, pl: Node) -> void:
 	var away := (global_position - pl.global_position).normalized()
 	_move_toward(global_position + away * 6.0, Constants.WORKER_SPEED_FLEE, delta)
 	if dist >= Constants.WORKER_HIDE_DIST:
-		if _alarm_level >= int(Alarm.Level.ALARMA):
+		if _alarm_level >= 2:  # ALARMA
 			_enter_hide()
 		else:
 			_spotted_once = false
@@ -213,7 +213,7 @@ func _do_hide(delta: float) -> void:
 	if _mesh: _mesh.scale.y = move_toward(_mesh.scale.y, 0.6, delta * 4.0)
 	if _head: _head.position.y = move_toward(_head.position.y, 1.1, delta * 4.0)
 	if _hide_timer <= 0.0:
-		if _alarm_level < int(Alarm.Level.ALARMA):
+		if _alarm_level < 2:  # ALARMA
 			_spotted_once = false
 			state = State.PATROL
 			# Levantarse
@@ -267,18 +267,18 @@ func _enter_hide() -> void:
 	AudioMgr.play_worker_hide()
 
 func _resume_after_stun() -> void:
-	if _alarm_level >= int(Alarm.Level.ALARMA): _enter_hide()
+	if _alarm_level >= 2: _enter_hide()  # ALARMA
 	else: state = State.PATROL
 
 func _on_alarm_changed(lv: int) -> void:
 	_alarm_level = lv
 	match lv:
-		int(Alarm.Level.CALMA):
+		0:  # CALMA
 			_set_state_light_off()
 			if state == State.HIDE: state = State.PATROL; _spotted_once = false
-		int(Alarm.Level.ALERTA):
+		1:  # ALERTA
 			_set_state_light(Color(1.0, 0.8, 0.0, 0.7))
-		int(Alarm.Level.ALARMA), int(Alarm.Level.LOCKDOWN):
+		2, 3:  # ALARMA, LOCKDOWN
 			if state == State.IDLE or state == State.PATROL:
 				var pl := _get_player()
 				if pl and global_position.distance_to(pl.global_position) < Constants.WORKER_DETECT_RANGE * 2.0:

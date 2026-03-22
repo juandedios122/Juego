@@ -46,14 +46,14 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	# ── Expirar pasivas con duración ─────────────────────
 	var expired : Array[String] = []
-	for name in _timers:
-		_timers[name] -= delta
-		if _timers[name] <= 0.0:
-			expired.append(name)
-	for name in expired:
-		_timers.erase(name)
-		passives.erase(name)
-		passive_lost.emit(name)
+	for ability_name in _timers:
+		_timers[ability_name] -= delta
+		if _timers[ability_name] <= 0.0:
+			expired.append(ability_name)
+	for ability_name in expired:
+		_timers.erase(ability_name)
+		passives.erase(ability_name)
+		passive_lost.emit(ability_name)
 
 	# ── Cooldowns de activas — emit solo cuando hay cambio real ─
 	for skill in ACTIVE_SKILLS:
