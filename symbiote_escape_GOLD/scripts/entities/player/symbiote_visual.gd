@@ -8,6 +8,7 @@ var body_mesh   : MeshInstance3D     = null
 var glow        : OmniLight3D        = null
 var body_mat    : StandardMaterial3D = null
 var _eye_mats   : Array              = []
+var _eye_nodes  : Array              = []   # MeshInstance3D de cada ojo
 
 # ── Sprite (reemplaza body_mesh + eyes si hay imágenes) ──
 var _sprite      : AnimatedSprite3D = null
@@ -60,21 +61,23 @@ func _ready() -> void:
 func _try_load_sprite() -> void:
 	## Carga el spritesheet del simbionte si existe.
 	## El sprite es billboard y reemplaza el mesh esférico + ojos.
-	if not Engine.has_singleton("SpriteMgr"): return
-	var mgr : Node = Engine.get_singleton("SpriteMgr")
-	if not mgr.has_sprites("symbiote"): return
+	# SpriteMgr es autoload, no Engine singleton — acceder directamente
+	if not is_instance_valid(SpriteMgr): return
+	if not SpriteMgr.has_sprites("symbiote"): return
+	var mgr : Node = SpriteMgr
 
 	_sprite = AnimatedSprite3D.new()
 	_sprite.billboard      = BaseMaterial3D.BILLBOARD_ENABLED
-	_sprite.pixel_size     = 0.016
+	_sprite.pixel_size     = 0.012          # 128px * 0.012 = ~1.54 unidades — tamaño correcto
 	_sprite.position       = Vector3(0.0, 0.9, 0.0)
 	_sprite.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 	_sprite.cast_shadow    = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_sprite.no_depth_test  = false
 	add_child(_sprite)
 
 	var sf := SpriteFrames.new()
 	for anim_name in ["idle", "walk", "absorb", "dash"]:
-		var frames := mgr.get_frames("symbiote", anim_name)
+		var frames : SpriteFrames = mgr.get_frames("symbiote", anim_name)
 		if frames == null: continue
 		if not sf.has_animation(anim_name):
 			sf.add_animation(anim_name)
@@ -88,9 +91,8 @@ func _try_load_sprite() -> void:
 
 	# Ocultar mesh por código cuando hay sprite
 	if body_mesh: body_mesh.visible = false
-	for em in _eye_mats:
-		var eye_node := em.get_local_scene()
-		if eye_node: eye_node.visible = false
+	for eye_node in _eye_nodes:
+		eye_node.visible = false
 
 func _play_sprite(anim: String) -> void:
 	if not _use_sprite or _sprite == null: return
@@ -126,7 +128,7 @@ func _build_eyes() -> void:
 		em.albedo_color               = Color(0.9, 0.9, 1.0, 1.0)
 		em.emission_enabled           = true; em.emission = Color(0.6, 0.6, 1.0, 1.0)
 		em.emission_energy_multiplier = 4.5; em.rim_enabled = true; em.rim = 0.5
-		eye.material_override = em; add_child(eye); _eye_mats.append(em)
+		eye.material_override = em; add_child(eye); _eye_mats.append(em); _eye_nodes.append(eye)
 
 func _build_glow() -> void:
 	glow = OmniLight3D.new(); glow.position = Vector3(0.0, 0.9, 0.0)

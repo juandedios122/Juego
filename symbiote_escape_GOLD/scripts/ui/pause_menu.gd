@@ -8,8 +8,8 @@ const COL_MUTED := Color(0.38, 0.42, 0.50, 1.0)
 const COL_GREEN := Color(0.18, 0.92, 0.44, 1.0)
 const PW        := 440
 const PH        := 420
-const PX        := (1920 - PW) / 2
-const PY        := (1080 - PH) / 2
+const PX        := (1920 - PW) / 2.0
+const PY        := (1080 - PH) / 2.0
 
 var _open : bool  = false
 var _root : Control
@@ -91,7 +91,7 @@ func _cr(parent: Control, pos: Vector2, sz: Vector2, col: Color) -> ColorRect:
 	parent.add_child(r); return r
 
 func _lbl(parent: Control, pos: Vector2, sz: Vector2, txt: String,
-		fs: int, col: Color, ha: int = HORIZONTAL_ALIGNMENT_LEFT) -> Label:
+		fs: int, col: Color, ha: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT) -> Label:
 	var l := Label.new()
 	l.position = pos; l.size = sz; l.text = txt
 	l.horizontal_alignment = ha

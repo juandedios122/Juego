@@ -34,7 +34,7 @@ func generate() -> void:
 	_b = load("res://scripts/systems/level_builder.gd").new()
 	_b.setup(self)
 	add_child(_b)
-	_setup_environment()
+	# _setup_environment()  # Now handled by LightingManager
 	_build_all_rooms()
 	_build_all_corridors()
 	_build_ventilation_shafts()
@@ -52,10 +52,10 @@ func _setup_environment() -> void:
 	# Fondo oscuro industrial
 	env.background_mode        = Environment.BG_COLOR
 	env.background_color       = Color(0.008, 0.008, 0.015, 1.0)
-	# Luz ambiental muy tenue — la oscuridad es importante en sigilo
+	# Luz ambiental más fuerte — permite ver los sprites claramente
 	env.ambient_light_source   = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color    = Color(0.03, 0.04, 0.06, 1.0)
-	env.ambient_light_energy   = 0.45
+	env.ambient_light_color    = Color(0.08, 0.10, 0.14, 1.0)
+	env.ambient_light_energy   = 1.2
 	# SSIL (Screen Space Indirect Light)
 	env.ssil_enabled           = true
 	env.ssil_radius            = 5.0
@@ -82,15 +82,15 @@ func _setup_environment() -> void:
 	env.set("glow_levels/2", 0.90)
 	env.set("glow_levels/3", 0.55)
 	env.set("glow_levels/4", 0.30)
-	# Fog volumétrico para atmósfera densa
+	# Fog volumétrico más sutil — no bloquea la visión de los sprites
 	env.volumetric_fog_enabled       = true
-	env.volumetric_fog_density       = 0.022
+	env.volumetric_fog_density       = 0.008
 	env.volumetric_fog_albedo        = Color(0.04, 0.06, 0.10, 1.0)
 	env.volumetric_fog_emission      = Color(0.01, 0.02, 0.04, 1.0)
-	env.volumetric_fog_gi_inject     = 1.2
-	env.volumetric_fog_anisotropy    = 0.4
-	env.volumetric_fog_length        = 72.0
-	env.volumetric_fog_detail_spread = 2.5
+	env.volumetric_fog_gi_inject     = 0.8
+	env.volumetric_fog_anisotropy    = 0.3
+	env.volumetric_fog_length        = 64.0
+	env.volumetric_fog_detail_spread = 2.0
 	# Ajuste de color — film noir / sci-fi verde
 	env.adjustment_enabled    = true
 	env.adjustment_brightness = 1.0
@@ -104,12 +104,12 @@ func _setup_environment() -> void:
 	we.environment = env
 	add_child(we)
 
-	# Luz direccional tenue (sistema de iluminación interna)
+	# Luz direccional — ilumina sprites desde arriba-frente
 	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-60.0, 20.0, 0.0)
-	sun.light_color      = Color(0.4, 0.45, 0.55, 1.0)
-	sun.light_energy     = 0.25
-	sun.shadow_enabled            = true
+	sun.rotation_degrees = Vector3(-55.0, 15.0, 0.0)
+	sun.light_color      = Color(0.55, 0.60, 0.70, 1.0)
+	sun.light_energy     = 0.55
+	sun.shadow_enabled   = false   # sin sombras para mejor rendimiento con sprites
 	add_child(sun)
 
 func _build_all_rooms() -> void:
@@ -127,35 +127,59 @@ func _build_all_rooms() -> void:
 func _build_room(cx: float, cz: float, rw: float, rd: float,
 		col: Color, lcol: Color, lbl: String) -> void:
 	var hw := rw * 0.5; var hd := rd * 0.5
-	# Materiales con roughness variado para más realismo
-	var floor_col := Color(col.r * 0.55, col.g * 0.55, col.b * 0.55, 1.0)
-	var ceil_col  := Color(col.r * 0.35, col.g * 0.35, col.b * 0.35, 1.0)
+	# Suelo más claro para reflejar la luz y ver mejor los sprites
+	var floor_col := Color(col.r * 0.65, col.g * 0.65, col.b * 0.65, 1.0)
+	var ceil_col  := Color(col.r * 0.30, col.g * 0.30, col.b * 0.30, 1.0)
 	_b.slab(Vector3(cx, -TK*0.5, cz),     Vector3(rw, TK, rd), floor_col)
 	_b.slab(Vector3(cx, WH+TK*0.5, cz),   Vector3(rw, TK, rd), ceil_col)
 	_b.slab(Vector3(cx, WH*0.5, cz-hd),   Vector3(rw, WH, TK), col)
 	_b.slab(Vector3(cx, WH*0.5, cz+hd),   Vector3(rw, WH, TK), col)
 	_b.slab(Vector3(cx-hw, WH*0.5, cz),   Vector3(TK, WH, rd), col)
 	_b.slab(Vector3(cx+hw, WH*0.5, cz),   Vector3(TK, WH, rd), col)
-	for lx in [-rw*0.25, rw*0.25]:
-		for lz in [-rd*0.25, rd*0.25]:
-			_b.ceiling_light(cx + lx, cz + lz, lcol, maxf(rw, rd) * 0.9)
+	# Franja de neón en la base de las paredes (identidad visual por sala)
+	_b.floor_neon_strip(Vector3(cx-hw+0.1, 0, cz-hd+0.1), Vector3(cx+hw-0.1, 0, cz-hd+0.1), lcol, 0.10)
+	_b.floor_neon_strip(Vector3(cx-hw+0.1, 0, cz+hd-0.1), Vector3(cx+hw-0.1, 0, cz+hd-0.1), lcol, 0.10)
+	# 4 luces de techo — más cobertura para iluminar sprites
+	# for lx in [-rw*0.28, rw*0.28]:
+	# 	for lz in [-rd*0.28, rd*0.28]:
+	# 		_b.ceiling_light(cx + lx, cz + lz, lcol, maxf(rw, rd) * 1.0)
+	# Luz central adicional para salas grandes
+	# if rw > 12.0 or rd > 12.0:
+	# 	_b.ceiling_light(cx, cz, lcol * Color(0.8, 0.8, 0.8, 1.0), maxf(rw, rd) * 0.7)
 	if lbl != "":
 		_b.sign_emissive(Vector3(cx, WH*0.75, cz-hd+0.07), lcol)
 
 func _build_all_corridors() -> void:
+	# Entrada → Vestuario (este)
 	_corridor(Vector3(7,0,16),    Vector3(20,0,16),   3.6)
+	# Entrada → Lab B (oeste)
 	_corridor(Vector3(-7,0,16),   Vector3(-20,0,16),  3.6)
+	# Corredor central norte-sur (entrada → control)
 	_corridor(Vector3(0,0,9),     Vector3(0,0,-12),   4.2)
+	# Entrada → Vestuario (pasillo norte)
 	_corridor(Vector3(7,0,22),    Vector3(21,0,22),   2.8)
+	# Lab A → Archivo (corredor este)
 	_corridor(Vector3(20,0,4),    Vector3(7,0,-20),   3.2)
+	# Lab B → Cámara Fría (corredor oeste)
 	_corridor(Vector3(-20,0,4),   Vector3(-7,0,-20),  3.2)
+	# Control → Archivo (este)
 	_corridor(Vector3(7,0,-20),   Vector3(23,0,-20),  3.2)
+	# Control → Cámara Fría (oeste)
 	_corridor(Vector3(-7,0,-20),  Vector3(-24,0,-20), 3.2)
+	# Corredor central sur (control → salida)
 	_corridor(Vector3(0,0,-28),   Vector3(0,0,-54),   4.2)
+	# Corredor norte este (→ reactor)
 	_corridor(Vector3(7,0,-46),   Vector3(21,0,-46),  3.6)
+	# Corredor norte oeste (→ hub)
 	_corridor(Vector3(-7,0,-46),  Vector3(-22,0,-46), 3.6)
+	# Archivo → Reactor (sur)
 	_corridor(Vector3(30,0,-29),  Vector3(30,0,-37),  3.6)
+	# Cámara Fría → Hub (sur)
 	_corridor(Vector3(-30,0,-26), Vector3(-30,0,-39), 3.0)
+	# Vestuario → Lab A (conexión directa)
+	_corridor(Vector3(26,0,18),   Vector3(26,0,11),   2.8)
+	# Lab A → Lab B (pasillo superior)
+	_corridor(Vector3(20,0,4),    Vector3(-20,0,4),   3.0)
 
 func _corridor(a: Vector3, b: Vector3, w: float) -> void:
 	var mid  := (a + b) * 0.5
@@ -178,10 +202,10 @@ func _corridor(a: Vector3, b: Vector3, w: float) -> void:
 		_b.slab(Vector3(cx+w*0.5,WH*0.5,cz), Vector3(TK,WH,len), wc)
 	var lt := OmniLight3D.new()
 	lt.position     = Vector3(cx, WH - 0.4, cz)
-	lt.light_color  = Color(0.65, 0.70, 0.78, 1.0)
-	lt.light_energy = 1.4
-	lt.omni_range   = maxf(len, w) * 0.85
-	lt.light_volumetric_fog_energy = 0.3
+	lt.light_color  = Color(0.75, 0.80, 0.90, 1.0)
+	lt.light_energy = 2.2
+	lt.omni_range   = maxf(len, w) * 1.1
+	lt.light_volumetric_fog_energy = 0.2
 	add_child(lt)
 	Alarm.register_light(lt)
 
@@ -337,6 +361,21 @@ func _build_xp_orbs() -> void:
 	_b.interactive_terminal(Vector3(0, 0, -58),    Color(0.2, 1.0, 0.5), 120)
 	_b.interactive_terminal(Vector3(28, 0, 4),     Color(0.8, 0.4, 1.0), 60)
 	_b.interactive_terminal(Vector3(-28, 0, 4),    Color(0.8, 0.4, 1.0), 60)
+	# ── Flechas de dirección en el suelo ──────────────────
+	# Corredor central: apuntan hacia el sur (hacia la salida)
+	_b.floor_arrow(Vector3(0, 0,  5),  0.0,  Color(0.2, 1.0, 0.6, 1.0))
+	_b.floor_arrow(Vector3(0, 0, -5),  0.0,  Color(0.2, 1.0, 0.6, 1.0))
+	_b.floor_arrow(Vector3(0, 0, -35), 0.0,  Color(0.2, 1.0, 0.6, 1.0))
+	_b.floor_arrow(Vector3(0, 0, -48), 0.0,  Color(0.2, 1.0, 0.6, 1.0))
+	# Flechas hacia Lab A (este)
+	_b.floor_arrow(Vector3(14, 0, 4),  -PI*0.5, Color(0.4, 0.6, 1.0, 1.0))
+	# Flechas hacia Lab B (oeste)
+	_b.floor_arrow(Vector3(-14, 0, 4),  PI*0.5, Color(0.4, 0.6, 1.0, 1.0))
+	# ── Franjas de neón en suelos de corredores ────────────
+	_b.floor_neon_strip(Vector3(-1.5, 0, 9), Vector3(-1.5, 0, -12), Color(0.2, 0.8, 1.0), 0.06)
+	_b.floor_neon_strip(Vector3( 1.5, 0, 9), Vector3( 1.5, 0, -12), Color(0.2, 0.8, 1.0), 0.06)
+	_b.floor_neon_strip(Vector3(-1.5, 0, -28), Vector3(-1.5, 0, -54), Color(0.2, 1.0, 0.5), 0.06)
+	_b.floor_neon_strip(Vector3( 1.5, 0, -28), Vector3( 1.5, 0, -54), Color(0.2, 1.0, 0.5), 0.06)
 
 # ── Detalles atmosféricos ─────────────────────────────────
 func _build_atmospheric_details() -> void:

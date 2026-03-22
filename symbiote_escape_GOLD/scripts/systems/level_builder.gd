@@ -19,10 +19,21 @@ func slab(pos: Vector3, size: Vector3, col: Color) -> StaticBody3D:
 	var bm   := BoxMesh.new()
 	bm.size   = size
 	mi.mesh   = bm
-	var mat  := StandardMaterial3D.new()
-	mat.albedo_color = col
-	mat.roughness    = 0.85
-	mat.metallic     = 0.15
+	var mat
+	if pos.y < 0:  # Floor
+		mat = ShaderMaterial.new()
+		mat.shader = load("res://shaders/floor_wet.gdshader")
+		mat.set_shader_parameter("tile_scale", 4.0)  # Default, can be adjusted per level
+	elif size.y >= Constants.LEVEL_WALL_HEIGHT * 0.8:  # Wall
+		mat = ShaderMaterial.new()
+		mat.shader = load("res://shaders/wall_symbiote.gdshader")
+		mat.set_shader_parameter("vein_coverage", 0.4)
+		mat.set_shader_parameter("crack_glow_intensity", 1.5)
+	else:  # Ceiling or other
+		mat = StandardMaterial3D.new()
+		mat.albedo_color = col
+		mat.roughness    = 0.85
+		mat.metallic     = 0.15
 	mi.material_override = mat
 	body.add_child(mi)
 	var cs   := CollisionShape3D.new()
@@ -41,8 +52,9 @@ func cylinder_prop(pos: Vector3, r: float, h: float, col: Color) -> void:
 	var cm   := CylinderMesh.new()
 	cm.top_radius = r; cm.bottom_radius = r; cm.height = h
 	mi.mesh   = cm
-	var mat  := StandardMaterial3D.new()
-	mat.albedo_color = col; mat.roughness = 0.7; mat.metallic = 0.3
+	var mat = ShaderMaterial.new()
+	mat.shader = load("res://shaders/pillar_infected.gdshader")
+	mat.set_shader_parameter("infection_amount", 0.5)  # Default, can be adjusted
 	mi.material_override = mat
 	body.add_child(mi)
 	var cs   := CollisionShape3D.new()
@@ -84,8 +96,8 @@ func ceiling_light(lx: float, lz: float, col: Color, rng: float) -> OmniLight3D:
 	var lt   := OmniLight3D.new()
 	lt.position     = Vector3(lx, Constants.LEVEL_WALL_HEIGHT - 0.35, lz)
 	lt.light_color  = col
-	lt.light_energy = 1.6
-	lt.omni_range   = rng
+	lt.light_energy = 2.8
+	lt.omni_range   = rng * 1.2
 	_parent.add_child(lt)
 	Alarm.register_light(lt)
 	return lt
@@ -101,28 +113,28 @@ func vent_shaft(a: Vector3, b: Vector3, add_npc_blocker: bool = true) -> void:
 	var VH  := Constants.VENT_HEIGHT
 	var TK  := Constants.LEVEL_WALL_THICK
 	var mid := (a + b) * 0.5
-	var len := a.distance_to(b)
+	var seg_len := a.distance_to(b)
 	var dir := (b - a).normalized()
 	var is_x := absf(dir.x) > absf(dir.z)
 	var mc  := Color(0.28, 0.31, 0.34, 1.0)
 	var cc  := Color(0.15, 0.17, 0.19, 1.0)
 	if is_x:
-		slab(Vector3(mid.x, a.y - TK*0.5,              mid.z), Vector3(len, TK, W),  mc)
-		slab(Vector3(mid.x, a.y + VH + TK*0.5,         mid.z), Vector3(len, TK, W),  cc)
-		slab(Vector3(mid.x, a.y + VH*0.5, mid.z - W*0.5), Vector3(len, VH, TK),      mc)
-		slab(Vector3(mid.x, a.y + VH*0.5, mid.z + W*0.5), Vector3(len, VH, TK),      mc)
+		slab(Vector3(mid.x, a.y - TK*0.5,              mid.z), Vector3(seg_len, TK, W),  mc)
+		slab(Vector3(mid.x, a.y + VH + TK*0.5,         mid.z), Vector3(seg_len, TK, W),  cc)
+		slab(Vector3(mid.x, a.y + VH*0.5, mid.z - W*0.5), Vector3(seg_len, VH, TK),      mc)
+		slab(Vector3(mid.x, a.y + VH*0.5, mid.z + W*0.5), Vector3(seg_len, VH, TK),      mc)
 	else:
-		slab(Vector3(mid.x, a.y - TK*0.5,              mid.z), Vector3(W, TK, len),  mc)
-		slab(Vector3(mid.x, a.y + VH + TK*0.5,         mid.z), Vector3(W, TK, len),  cc)
-		slab(Vector3(mid.x - W*0.5, a.y + VH*0.5, mid.z), Vector3(TK, VH, len),      mc)
-		slab(Vector3(mid.x + W*0.5, a.y + VH*0.5, mid.z), Vector3(TK, VH, len),      mc)
+		slab(Vector3(mid.x, a.y - TK*0.5,              mid.z), Vector3(W, TK, seg_len),  mc)
+		slab(Vector3(mid.x, a.y + VH + TK*0.5,         mid.z), Vector3(W, TK, seg_len),  cc)
+		slab(Vector3(mid.x - W*0.5, a.y + VH*0.5, mid.z), Vector3(TK, VH, seg_len),      mc)
+		slab(Vector3(mid.x + W*0.5, a.y + VH*0.5, mid.z), Vector3(TK, VH, seg_len),      mc)
 	# Luz tenue interior
-	var lt := OmniLight3D.new()
-	lt.position     = Vector3(mid.x, a.y + VH * 0.5, mid.z)
-	lt.light_color  = Color(0.4, 0.8, 0.5, 1.0)
-	lt.light_energy = 0.45
-	lt.omni_range   = len * 0.65
-	_parent.add_child(lt)
+	# var lt := OmniLight3D.new()
+	# lt.position     = Vector3(mid.x, a.y + VH * 0.5, mid.z)
+	# lt.light_color  = Color(0.4, 0.8, 0.5, 1.0)
+	# lt.light_energy = 0.45
+	# lt.omni_range   = seg_len * 0.65
+	# _parent.add_child(lt)
 	# Bloqueador de NPC (capa 2 = enemies)
 	if add_npc_blocker:
 		var bl := StaticBody3D.new()
@@ -130,7 +142,7 @@ func vent_shaft(a: Vector3, b: Vector3, add_npc_blocker: bool = true) -> void:
 		bl.collision_layer = 2; bl.collision_mask = 0
 		var bcs := CollisionShape3D.new()
 		var bbs := BoxShape3D.new()
-		bbs.size = Vector3(len if is_x else W + 0.5, 1.2, W + 0.5 if is_x else len)
+		bbs.size = Vector3(seg_len if is_x else W + 0.5, 1.2, W + 0.5 if is_x else seg_len)
 		bcs.shape = bbs
 		bl.add_child(bcs)
 		_parent.add_child(bl)
@@ -176,15 +188,15 @@ func locked_door(pos: Vector3, size: Vector3, col: Color,
 	trigger.add_child(tcs)
 	_parent.add_child(trigger)
 	# Closure de apertura — captura referencias locales
-	var _opened  := false
+	var opened_flag  := [false]   # array wrapper so lambda mutation is visible
 	var door_ref := door
 	var mat_ref  := dmat
 	var req      := required_absorptions
 	trigger.body_entered.connect(func(body: Node) -> void:
-		if _opened: return
+		if opened_flag[0]: return
 		if not body.is_in_group("player"): return
 		if GM.absorption_count < req: return
-		_opened = true
+		opened_flag[0] = true
 		AudioMgr.play_door_unlock()   # sonido de apertura
 		var tw := door_ref.create_tween()
 		tw.tween_property(door_ref, "position:y",
@@ -210,12 +222,12 @@ func hazard_tile(center: Vector3, size_xz: Vector2, col: Color) -> Area3D:
 	mat.emission_energy_multiplier = 2.2
 	mi.material_override = mat
 	_parent.add_child(mi)
-	var lt := OmniLight3D.new()
-	lt.position     = center + Vector3(0, 1.0, 0)
-	lt.light_color  = col
-	lt.light_energy = 2.4
-	lt.omni_range   = maxf(size_xz.x, size_xz.y) * 0.9
-	_parent.add_child(lt)
+	# var lt := OmniLight3D.new()
+	# lt.position     = center + Vector3(0, 1.0, 0)
+	# lt.light_color  = col
+	# lt.light_energy = 2.4
+	# lt.omni_range   = maxf(size_xz.x, size_xz.y) * 0.9
+	# _parent.add_child(lt)
 	var area := Area3D.new()
 	area.name = "HazardArea"
 	area.position = center
@@ -246,12 +258,12 @@ func xp_orb(pos: Vector3, amount: int) -> void:
 	mat.emission_energy_multiplier = 3.5
 	orb.material_override = mat
 	_parent.add_child(orb)
-	var glow := OmniLight3D.new()
-	glow.position     = pos
-	glow.light_color  = col
-	glow.light_energy = 1.2
-	glow.omni_range   = 3.2
-	_parent.add_child(glow)
+	# var glow := OmniLight3D.new()
+	# glow.position     = pos
+	# glow.light_color  = col
+	# glow.light_energy = 1.2
+	# glow.omni_range   = 3.2
+	# _parent.add_child(glow)
 	var area := Area3D.new()
 	area.position = pos
 	var cs   := CollisionShape3D.new()
@@ -262,13 +274,13 @@ func xp_orb(pos: Vector3, amount: int) -> void:
 	_parent.add_child(area)
 	var xp      := amount
 	var orb_ref := orb
-	var gl_ref  := glow
+	# var gl_ref  := glow
 	area.body_entered.connect(func(body: Node) -> void:
 		if not body.is_in_group("player"): return
 		AudioMgr.play_xp_orb()   # sonido de recogida
 		ProgressionMgr.add_xp(xp)
 		orb_ref.queue_free()
-		gl_ref.queue_free()
+		# gl_ref.queue_free()
 		area.queue_free()
 	)
 
@@ -277,13 +289,13 @@ func alert_strip(origin: Vector3, count: int, step: float, is_x: bool) -> void:
 	for i in count:
 		var off := Vector3(i * step if is_x else 0.0, 0.0,
 				0.0 if is_x else i * step)
-		var lt := OmniLight3D.new()
-		lt.position     = origin + off + Vector3(0.0, Constants.LEVEL_WALL_HEIGHT - 0.28, 0.0)
-		lt.light_color  = Color(1.0, 0.08, 0.04, 1.0)
-		lt.light_energy = 1.3
-		lt.omni_range   = 4.2
-		_parent.add_child(lt)
-		Alarm.register_light(lt)
+		# var lt := OmniLight3D.new()
+		# lt.position     = origin + off + Vector3(0.0, Constants.LEVEL_WALL_HEIGHT - 0.28, 0.0)
+		# lt.light_color  = Color(1.0, 0.08, 0.04, 1.0)
+		# lt.light_energy = 1.3
+		# lt.omni_range   = 4.2
+		# _parent.add_child(lt)
+		# Alarm.register_light(lt)
 
 # ─────────────────────────────────────────────────────────
 # NUEVOS MÉTODOS v10 — Gráficos mejorados e interactividad
@@ -321,11 +333,11 @@ func interactive_terminal(pos: Vector3, col: Color, xp_reward: int) -> void:
 	screen.material_override = smat
 	_parent.add_child(screen)
 	# Luz de pantalla
-	var lt := OmniLight3D.new()
-	lt.position     = pos + Vector3(0.0, 0.25, -0.5)
-	lt.light_color  = col
-	lt.light_energy = 1.2; lt.omni_range = 3.5
-	_parent.add_child(lt)
+	# var lt := OmniLight3D.new()
+	# lt.position     = pos + Vector3(0.0, 0.25, -0.5)
+	# lt.light_color  = col
+	# lt.light_energy = 1.2; lt.omni_range = 3.5
+	# _parent.add_child(lt)
 	# Zona de interacción
 	var area := Area3D.new()
 	area.position = pos
@@ -333,18 +345,19 @@ func interactive_terminal(pos: Vector3, col: Color, xp_reward: int) -> void:
 	var abs_ := SphereShape3D.new(); abs_.radius = 1.8
 	acs.shape = abs_; area.add_child(acs)
 	_parent.add_child(area)
-	var _used := false
-	var mat_ref := smat; var lt_ref := lt; var xp := xp_reward
+	var _used := [false]
+	var mat_ref := smat; # var lt_ref := lt; 
+	var xp := xp_reward
 	# Dar XP al entrar en el área (sin necesidad de presionar tecla)
 	area.body_entered.connect(func(body2: Node) -> void:
-		if _used or not body2.is_in_group("player"): return
-		_used = true
+		if _used[0] or not body2.is_in_group("player"): return
+		_used[0] = true
 		ProgressionMgr.add_xp(xp)
 		AudioMgr.play_door_unlock()
 		mat_ref.emission = Color(0.2, 1.0, 0.4, 1.0)
 		mat_ref.emission_energy_multiplier = 6.0
-		lt_ref.light_color = Color(0.2, 1.0, 0.4, 1.0)
-		lt_ref.light_energy = 3.0
+		# lt_ref.light_color = Color(0.2, 1.0, 0.4, 1.0)
+		# lt_ref.light_energy = 3.0
 	)
 
 ## Tubo de vapor decorativo con partículas.
@@ -379,12 +392,12 @@ func steam_pipe(pos: Vector3, height: float) -> void:
 ## Caja de fusibles con luz parpadeante.
 func fuse_box(pos: Vector3) -> void:
 	slab(pos, Vector3(0.5, 0.7, 0.12), Color(0.22, 0.22, 0.26, 1.0))
-	var lt := OmniLight3D.new()
-	lt.position     = pos + Vector3(0.0, 0.0, -0.3)
-	lt.light_color  = Color(1.0, 0.6, 0.1, 1.0)
-	lt.light_energy = 0.8; lt.omni_range = 2.2
-	_parent.add_child(lt)
-	Alarm.register_light(lt)
+	# var lt := OmniLight3D.new()
+	# lt.position     = pos + Vector3(0.0, 0.0, -0.3)
+	# lt.light_color  = Color(1.0, 0.6, 0.1, 1.0)
+	# lt.light_energy = 0.8; lt.omni_range = 2.2
+	# _parent.add_child(lt)
+	# Alarm.register_light(lt)
 
 ## Suelo con rejilla metálica (visual mejorado).
 func metal_grate_floor(pos: Vector3, size_xz: Vector2) -> void:
@@ -433,7 +446,7 @@ func security_camera(pos: Vector3, look_dir: Vector3) -> void:
 	var bm := BoxMesh.new(); bm.size = Vector3(0.18, 0.14, 0.28)
 	mi.mesh = bm; mi.position = pos
 	if look_dir.length_squared() > 0.01:
-		mi.look_at(pos + look_dir, Vector3.UP)
+		mi.look_at_from_position(pos, pos + look_dir, Vector3.UP)
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = Color(0.12, 0.12, 0.15, 1.0)
 	mat.metallic = 0.7; mat.roughness = 0.3
@@ -446,3 +459,43 @@ func security_camera(pos: Vector3, look_dir: Vector3) -> void:
 	led.light_energy = 0.6; led.omni_range = 1.2
 	_parent.add_child(led)
 	Alarm.register_light(led)
+
+## Flecha de dirección en el suelo — guía al jugador hacia la salida.
+func floor_arrow(pos: Vector3, angle_y: float, col: Color) -> void:
+	# Cuerpo de la flecha (rectángulo)
+	var mi := MeshInstance3D.new()
+	var bm := BoxMesh.new(); bm.size = Vector3(0.3, 0.04, 0.9)
+	mi.mesh = bm; mi.position = pos + Vector3(0.0, 0.03, 0.0)
+	mi.rotation.y = angle_y
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color               = col * Color(0.2, 0.2, 0.2, 1.0)
+	mat.emission_enabled           = true
+	mat.emission                   = col
+	mat.emission_energy_multiplier = 1.8
+	mi.material_override = mat
+	_parent.add_child(mi)
+	# Punta de la flecha
+	var tip := MeshInstance3D.new()
+	var pm  := PrismMesh.new(); pm.size = Vector3(0.55, 0.04, 0.45)
+	tip.mesh = pm; tip.position = pos + Vector3(0.0, 0.03, -0.55)
+	tip.rotation.y = angle_y
+	tip.material_override = mat
+	_parent.add_child(tip)
+
+## Línea de neón en el suelo (franja decorativa).
+func floor_neon_strip(a: Vector3, b: Vector3, col: Color, width: float = 0.08) -> void:
+	var mid := (a + b) * 0.5
+	var seg_len := a.distance_to(b)
+	var dir := (b - a).normalized()
+	var is_x := absf(dir.x) > absf(dir.z)
+	var mi := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = Vector3(seg_len if is_x else width, 0.03, width if is_x else seg_len)
+	mi.mesh = bm; mi.position = mid + Vector3(0.0, 0.02, 0.0)
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color               = col * Color(0.15, 0.15, 0.15, 1.0)
+	mat.emission_enabled           = true
+	mat.emission                   = col
+	mat.emission_energy_multiplier = 2.5
+	mi.material_override = mat
+	_parent.add_child(mi)

@@ -56,7 +56,7 @@ func _ready() -> void:
 
 func _build_sprite3d() -> void:
 	_sprite = Sprite3D.new()
-	_sprite.pixel_size      = 0.01        # 1 px = 0.01 unidades Godot (ajusta si necesitas)
+	_sprite.pixel_size      = 0.013       # 128px * 0.013 ≈ 1.66 unidades — tamaño correcto
 	_sprite.billboard       = BaseMaterial3D.BILLBOARD_ENABLED   # siempre mira a la cámara
 	_sprite.centered        = true
 	_sprite.double_sided    = true

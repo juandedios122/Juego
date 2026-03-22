@@ -26,6 +26,7 @@ func _build() -> void:
 	_build_title_section()
 	_main_panel = _build_main_panel()
 	_slot_panel = _build_slot_panel()
+	_root.add_child(_slot_panel)
 	_slot_panel.visible = false
 	_build_footer()
 
@@ -166,7 +167,7 @@ func _delete_slot(slot: int) -> void:
 	SaveMgr.delete_slot(slot)
 	if slot == SaveMgr.get_active_slot():
 		ProgressionMgr.reset()
-	# Reconstruir panel de slots
+	# Reconstruir panel de slots — remove old, build and add new
 	_slot_panel.queue_free()
 	_slot_panel = _build_slot_panel()
 	_slot_panel.visible = true

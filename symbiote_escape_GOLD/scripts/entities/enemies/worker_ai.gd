@@ -66,7 +66,7 @@ func _build_visual() -> void:
 		_billboard = Node3D.new()
 		_billboard.set_script(bb_script)
 		add_child(_billboard)
-		_billboard.setup("worker", 0.85)
+		_billboard.setup("worker", 0.8)
 		_use_sprite = _billboard.is_ready()
 
 	# ── Visual por código (se oculta si hay sprite) ───────

@@ -1,6 +1,7 @@
 extends Node
 ## SpriteMgr — Carga y cachea spritesheets para personajes.
 ## Si el archivo no existe, devuelve null y el personaje usa visual por código.
+## NOTA: Es un autoload, acceder via SpriteMgr (no Engine.has_singleton).
 
 # Caché: { "guard/walk" : SpriteFrames }
 var _cache : Dictionary = {}

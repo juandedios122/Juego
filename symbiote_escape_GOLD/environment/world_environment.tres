@@ -1,0 +1,83 @@
+[gd_resource type="Environment" load_steps=2 format=3 uid="uid://environment_symbiote"]
+
+[resource]
+background_mode = 1
+background_color = Color(0.01, 0.005, 0.02, 1)
+background_energy_multiplier = 1.0
+
+# === SKY / AMBIENT ===
+ambient_light_source = 3
+ambient_light_color = Color(0.08, 0.0, 0.15, 1)
+ambient_light_sky_contribution = 0.0
+ambient_light_energy = 0.6
+
+# === TONEMAP ===
+tonemap_mode = 3
+tonemap_exposure = 1.15
+tonemap_white = 6.0
+
+# === GLOW (BLOOM) - CRÍTICO PARA SYMBIOTE ===
+glow_enabled = true
+glow_normalized = false
+glow_intensity = 0.9
+glow_strength = 1.2
+glow_bloom = 0.15
+glow_blend_mode = 2
+glow_hdr_threshold = 0.8
+glow_hdr_scale = 2.0
+glow_map_strength = 0.8
+
+# === SSAO ===
+ssao_enabled = true
+ssao_radius = 1.2
+ssao_intensity = 2.5
+ssao_power = 1.5
+ssao_detail = 0.6
+ssao_horizon = 0.06
+ssao_sharpness = 0.98
+ssao_light_affect = 0.0
+ssao_ao_channel_affect = 0.0
+
+# === SSIL ===
+ssil_enabled = true
+ssil_radius = 3.0
+ssil_intensity = 1.5
+ssil_sharpness = 0.9
+ssil_normal_rejection = 1.0
+
+# === FOG VOLUMÉTRICO (Atmósfera del laboratorio) ===
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.015
+volumetric_fog_albedo = Color(0.05, 0.0, 0.1, 1)
+volumetric_fog_emission = Color(0.08, 0.0, 0.2, 1)
+volumetric_fog_emission_energy = 0.3
+volumetric_fog_gi_inject = 1.0
+volumetric_fog_anisotropy = 0.3
+volumetric_fog_length = 64.0
+volumetric_fog_detail_spread = 2.0
+volumetric_fog_ambient_inject = 0.0
+volumetric_fog_sky_affect = 0.0
+volumetric_fog_temporal_reprojection_amount = 0.9
+
+# === FOG NORMAL ===
+fog_enabled = true
+fog_light_color = Color(0.03, 0.0, 0.06, 1)
+fog_light_energy = 1.0
+fog_sun_scatter = 0.1
+fog_density = 0.003
+fog_sky_affect = 0.1
+fog_height = -0.5
+fog_height_density = 0.15
+
+# === AJUSTE DE COLOR ===
+adjustment_enabled = true
+adjustment_brightness = 1.0
+adjustment_contrast = 1.15
+adjustment_saturation = 1.25
+
+# === SSR (Screen Space Reflections) ===
+ssr_enabled = true
+ssr_max_steps = 64
+ssr_fade_in = 0.15
+ssr_fade_out = 2.0
+ssr_depth_tolerance = 0.2

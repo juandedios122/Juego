@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://gamelevel_v4"]
+[gd_scene load_steps=5 format=3 uid="uid://gamelevel_v4"]
 
 [ext_resource type="Script" path="res://scripts/systems/level_manager.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/systems/level_generator.gd" id="2"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="3"]
+[ext_resource type="Script" path="res://scripts/symbiote_lighting_manager.gd" id="4"]
+[ext_resource type="Script" path="res://symbiote_hud.gd" id="5"]
 
 [node name="GameLevel" type="Node3D"]
 script = ExtResource("1")
@@ -12,4 +13,10 @@ script = ExtResource("2")
 
 [node name="Enemies" type="Node3D" parent="."]
 
-[node name="HUD" parent="." instance=ExtResource("3")]
+[node name="LightingManager" type="Node" parent="."]
+script = ExtResource("4")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Control" type="Control" parent="CanvasLayer"]
+script = ExtResource("5")

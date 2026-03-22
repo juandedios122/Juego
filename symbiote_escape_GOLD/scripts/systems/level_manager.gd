@@ -4,7 +4,7 @@ extends Node3D
 
 @onready var _level_geo : Node3D      = $LevelGeometry
 @onready var _enemies   : Node3D      = $Enemies
-@onready var _hud_node  : CanvasLayer = $HUD
+@onready var _hud_node  : Control     = $CanvasLayer/Control
 
 var _player     : Node = null
 var _pause_menu : Node = null
@@ -95,6 +95,7 @@ const PATROL_ROUTES := {
 func _ready() -> void:
 	Alarm.clear()
 	_spawn_player()
+	$LightingManager.attach_to_player(_player)
 	_generate_level()
 	_spawn_enemies()
 	_spawn_pause_menu()
@@ -190,7 +191,11 @@ func _wire_signals() -> void:
 	Alarm.level_changed.connect(func(lv: int): AudioMgr.play_music(lv))
 
 	# ── Audio de nivel up ────────────────────────────────────
-	ProgressionMgr.level_up.connect(func(_lv: int): AudioMgr.play_level_up())
+	ProgressionMgr.level_up.connect(func(_lv: int): 
+		AudioMgr.play_level_up()
+		if _player and _player._cam:
+			_player._cam.level_up_flash()
+	)
 	if _player and _player.has_method("get_ability_system"):
 		var ab = _player.get_ability_system()
 		if ab: ab.passive_gained.connect(_on_passive_gained_notify)
@@ -201,21 +206,30 @@ func _wire_signals() -> void:
 		Alarm.level_changed.connect(_on_alarm_changed_hud)
 
 func _on_passive_gained_notify(ability_name: String) -> void:
-	if _hud_node and _hud_node.has_method("show_absorb_notification"):
-		_hud_node.show_absorb_notification(ability_name)
+	# if _hud_node and _hud_node.has_method("show_absorb_notification"):
+	# 	_hud_node.show_absorb_notification(ability_name)
 
 func _on_health_changed(hp: float, mx: float) -> void:
-	if _hud_node and _hud_node.has_method("update_health"):
-		_hud_node.update_health(hp, mx)
+	if _hud_node and _hud_node.has_method("update_vitality"):
+		_hud_node.update_vitality(hp, mx)
 	AudioMgr.set_heartbeat(hp / maxf(mx, 1.0))
 
 func _on_absorb_changed(c: int) -> void:
 	if _hud_node and _hud_node.has_method("update_absorptions"):
-		_hud_node.update_absorptions(c)
+		var arch = mini(c, Constants.DOOR_REQ_ARCHIVO)
+		var cam = mini(c, Constants.DOOR_REQ_CAMARA_FRIA)
+		_hud_node.update_absorptions(c, arch, Constants.DOOR_REQ_ARCHIVO, cam, Constants.DOOR_REQ_CAMARA_FRIA)
+	if _hud_node and _hud_node.has_method("update_objetivo"):
+		if c < Constants.DOOR_REQ_ARCHIVO:
+			_hud_node.update_objetivo("Absorbe %d enemigo(s) más para abrir ARCHIVO" % (Constants.DOOR_REQ_ARCHIVO - c))
+		elif c < Constants.DOOR_REQ_CAMARA_FRIA:
+			_hud_node.update_objetivo("Absorbe %d enemigo(s) más para abrir CÁMARA FRÍA" % (Constants.DOOR_REQ_CAMARA_FRIA - c))
+		else:
+			_hud_node.update_objetivo("Encuentra la salida")
 
 func _on_alarm_changed_hud(lvl: int) -> void:
-	if _hud_node and _hud_node.has_method("update_alarm"):
-		_hud_node.update_alarm(lvl)
+	# if _hud_node and _hud_node.has_method("update_alarm"):
+	# 	_hud_node.update_alarm(lvl)
 
 func _on_exit_reached() -> void:
 	AudioMgr.play_ambient_stop()

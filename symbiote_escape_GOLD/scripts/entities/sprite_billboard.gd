@@ -8,7 +8,6 @@ var _character   : String           = ""   # "guard" | "worker"
 var _current_anim: String           = ""
 var _has_sprites : bool             = false
 var _state_light : OmniLight3D      = null
-var _sentido_ring : MeshInstance3D  = null
 
 # Colisión y luces se mantienen en el padre; aquí solo el visual.
 
@@ -22,17 +21,18 @@ func setup(character: String, height_offset: float = 0.9) -> void:
 
 	_sprite = AnimatedSprite3D.new()
 	_sprite.billboard        = BaseMaterial3D.BILLBOARD_ENABLED
-	_sprite.pixel_size       = 0.01           # 128px frame = ~1.28 unidades, coincide con cápsula
+	_sprite.pixel_size       = 0.013          # 128px * 0.013 ≈ 1.66 unidades — coincide con cápsula
 	_sprite.position         = Vector3(0.0, height_offset, 0.0)
 	_sprite.texture_filter   = BaseMaterial3D.TEXTURE_FILTER_NEAREST  # pixel art nítido
 	_sprite.cast_shadow      = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_sprite.no_depth_test    = false
 	add_child(_sprite)
 
 	# Cargar todas las animaciones disponibles en un solo SpriteFrames
 	var sf := SpriteFrames.new()
 	var anims := _get_anim_list(character)
 	for anim_name in anims:
-		var frames := mgr.get_frames(character, anim_name)
+		var frames : SpriteFrames = mgr.get_frames(character, anim_name)
 		if frames == null: continue
 		# Copiar frames de ese SpriteFrames al sf combinado
 		if not sf.has_animation(anim_name):

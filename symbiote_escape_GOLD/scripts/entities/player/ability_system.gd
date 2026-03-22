@@ -122,16 +122,16 @@ func get_active_passives() -> Array:
 
 # ── Privado ──────────────────────────────────────────────
 
-func _grant_passive(name: String, override_dur: float = -999.0) -> void:
-	passives[name] = true
+func _grant_passive(ability: String, override_dur: float = -999.0) -> void:
+	passives[ability] = true
 	var dur : float
 	if override_dur != -999.0:
 		dur = override_dur
 	else:
-		dur = PASSIVE_DURATIONS.get(name, 15.0)
+		dur = PASSIVE_DURATIONS.get(ability, 15.0)
 	if dur > 0.0:
-		_timers[name] = dur
-	passive_gained.emit(name)
+		_timers[ability] = dur
+	passive_gained.emit(ability)
 
 func _weighted_pick(pool: Array, weights: Array) -> String:
 	var total := 0.0

@@ -17,3 +17,9 @@ res://README.md
 res://assets/sprites/README.md
 res://scenes/player/symbiote.tscn
 res://scenes/enemies/security.tscn
+res://scripts/entities/sprite_billboard.gd
+res://scripts/entities/player/symbiote_visual.gd
+res://assets/sprite_animator.gd
+res://scripts/core/sprite_manager.gd
+res://scripts/entities/player/ability_system.gd
+res://scripts/ui/pause_menu.gd

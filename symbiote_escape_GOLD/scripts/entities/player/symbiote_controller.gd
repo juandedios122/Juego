@@ -50,6 +50,7 @@ func _build_camera() -> void:
 	_cam = Camera3D.new()
 	_cam.name = "Camera"
 	_cam.fov  = Constants.CAM_FOV_NORMAL
+	_cam.script = load("res://scripts/vfx_controller.gd")
 	_spring.add_child(_cam)
 
 func _build_absorb_area() -> void:
@@ -235,6 +236,7 @@ func _on_absorb_complete(target: Node, enemy_type: String) -> void:
 	GM.player_health_changed.emit(health, max_health)
 
 	# === IMPACTO MÁXIMO ===
+	_cam.absorb_pulse()
 	camera_shake(Constants.ABSORB_CAM_SHAKE)
 	_trigger_hitstop(0.048)          # hit-stop 48ms — breve pero contundente
 	_trigger_slowmo()
@@ -316,6 +318,7 @@ func take_damage(amount: float) -> void:
 	amount *= (1.0 - minf(base_dr + fuerza_dr, Constants.POWER_DR_MAX))
 	health -= amount
 	GM.player_health_changed.emit(health, max_health)
+	_cam.damage_flash()
 	AudioMgr.play_damage()
 	camera_shake(Constants.DAMAGE_CAM_SHAKE)
 	if _visual: _visual.flash_damage()  # aberración cromática
