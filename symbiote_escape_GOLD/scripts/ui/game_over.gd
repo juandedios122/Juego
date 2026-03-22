@@ -106,7 +106,7 @@ func _process(delta: float) -> void:
 	_elapsed += delta
 	for r in _particles:
 		if not is_instance_valid(r): continue
-		var sp: float = r.get_meta("speed", 35.0)
+		var sp: float = float(r.get_meta("speed", 35.0))
 		r.position.y += sp * delta
 		if r.position.y > 1090.0:
 			r.position.y = -8.0

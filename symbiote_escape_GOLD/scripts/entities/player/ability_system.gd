@@ -59,7 +59,7 @@ func _process(delta: float) -> void:
 	for skill in ACTIVE_SKILLS:
 		var cd : Array = _cooldowns[skill]
 		if cd[0] > 0.0:
-			var prev := cd[0]
+			var prev : float = float(cd[0])
 			cd[0] = maxf(0.0, cd[0] - delta)
 			cooldown_updated.emit(skill, cd[0], cd[1])
 			if prev > 0.0 and cd[0] == 0.0:

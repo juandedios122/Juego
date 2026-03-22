@@ -44,7 +44,7 @@ func _build() -> void:
 	add_child(_cv)
 
 	_bg = ColorRect.new()
-	_bg.color = BGCOLS[0]
+	_bg.color = BGCOLS[0] as Color
 	_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_cv.add_child(_bg)
 
@@ -84,13 +84,15 @@ func _process(delta: float) -> void:
 
 func _tick_particles(delta: float) -> void:
 	for p in _pts:
-		var r : ColorRect = p["r"]
-		r.position.x -= p["sp"] * delta
+		var r  : ColorRect = p["r"] as ColorRect
+		var sp : float     = float(p["sp"])
+		var ba : float     = float(p["ba"])
+		r.position.x -= sp * delta
 		if r.position.x < -5.0:
 			r.position.x = 1925.0
 			r.position.y = randf_range(0.0, 1080.0)
-		var fl := sin(elapsed * p["sp"] * 0.25) * 0.12
-		r.color.a = clampf(p["ba"] + fl, 0.0, 1.0)
+		var fl : float = sin(elapsed * sp * 0.25) * 0.12
+		r.color.a = clampf(ba + fl, 0.0, 1.0)
 		if phase == 2:
 			r.color = Color(1.0, clampf(r.color.g - delta*3.0, 0.2, 1.0), 0.0, r.color.a)
 		elif phase >= 3:
@@ -101,38 +103,38 @@ func _tick_particles(delta: float) -> void:
 				r.color.a)
 
 func _tick_phase(delta: float) -> void:
-	var dur : float = PHASES[phase]["dur"]
+	var dur : float = float(PHASES[phase]["dur"])
 	var t   : float = pt / dur
 
 	match phase:
 		0:
-			_bg.color = _bg.color.lerp(BGCOLS[0], delta * 0.5)
+			_bg.color = _bg.color.lerp(BGCOLS[0] as Color, delta * 0.5)
 			if pt >= dur: _next()
 		1:
-			_bg.color = _bg.color.lerp(BGCOLS[1], delta * 0.3)
-			_ftxt(_ttl, PHASES[1]["title"], t, Color(0.6, 0.8, 1.0, 1.0))
-			_ftxt(_sub, PHASES[1]["sub"],   t, Color(0.5, 0.7, 0.9, 1.0))
+			_bg.color = _bg.color.lerp(BGCOLS[1] as Color, delta * 0.3)
+			_ftxt(_ttl, PHASES[1]["title"] as String, t, Color(0.6, 0.8, 1.0, 1.0))
+			_ftxt(_sub, PHASES[1]["sub"]   as String, t, Color(0.5, 0.7, 0.9, 1.0))
 			if pt >= dur: _next()
 		2:
-			_bg.color = _bg.color.lerp(BGCOLS[2], delta * 12.0)
+			_bg.color = _bg.color.lerp(BGCOLS[2] as Color, delta * 12.0)
 			var shk := maxf(0.0, 1.0 - pt) * 22.0
 			_ttl.position.x = 510.0 + randf_range(-shk, shk)
 			_ttl.position.y = 420.0 + randf_range(-shk, shk)
-			_ttl.text = PHASES[2]["title"]
-			_sub.text = PHASES[2]["sub"]
+			_ttl.text = PHASES[2]["title"] as String
+			_sub.text = PHASES[2]["sub"] as String
 			_ttl.add_theme_color_override("font_color", Color(1.0, 0.3, 0.0, minf(t*4.0,1.0)))
 			_sub.add_theme_color_override("font_color", Color(1.0, 0.6, 0.0, minf(t*3.0,0.85)))
 			if pt >= dur: _next()
 		3:
-			_bg.color = _bg.color.lerp(BGCOLS[3], delta * 1.5)
+			_bg.color = _bg.color.lerp(BGCOLS[3] as Color, delta * 1.5)
 			_ttl.position = Vector2(510.0, 420.0)
-			_ftxt(_ttl, PHASES[3]["title"], t, Color(0.6, 0.0, 1.0, 1.0))
-			_ftxt(_sub, PHASES[3]["sub"],   t, Color(0.7, 0.5, 0.9, 1.0))
+			_ftxt(_ttl, PHASES[3]["title"] as String, t, Color(0.6, 0.0, 1.0, 1.0))
+			_ftxt(_sub, PHASES[3]["sub"]   as String, t, Color(0.7, 0.5, 0.9, 1.0))
 			if pt >= dur: _next()
 		4:
-			_bg.color = _bg.color.lerp(BGCOLS[4], delta * 0.8)
-			_ftxt(_ttl, PHASES[4]["title"], t, Color(0.2, 1.0, 0.4, 1.0))
-			_ftxt(_sub, PHASES[4]["sub"],   t, Color(0.5, 0.9, 0.5, 1.0))
+			_bg.color = _bg.color.lerp(BGCOLS[4] as Color, delta * 0.8)
+			_ftxt(_ttl, PHASES[4]["title"] as String, t, Color(0.2, 1.0, 0.4, 1.0))
+			_ftxt(_sub, PHASES[4]["sub"]   as String, t, Color(0.5, 0.9, 0.5, 1.0))
 			if pt >= dur: _next()
 		5:
 			_bg.color = Color(0.0, 0.0, 0.0, 1.0)

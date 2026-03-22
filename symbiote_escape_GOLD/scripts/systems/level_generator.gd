@@ -78,9 +78,9 @@ func _setup_environment() -> void:
 	env.glow_strength          = 1.2
 	env.glow_bloom             = 0.22
 	env.glow_blend_mode        = Environment.GLOW_BLEND_MODE_ADDITIVE
-	env.glow_levels/1          = true
-	env.glow_levels/2          = true
-	env.glow_levels/3          = true
+	env.set("glow_levels/1", 0.75)
+	env.set("glow_levels/2", 0.80)
+	env.set("glow_levels/3", 0.40)
 	# Fog volumétrico para atmósfera densa
 	env.volumetric_fog_enabled       = true
 	env.volumetric_fog_density       = 0.018
@@ -99,12 +99,6 @@ func _setup_environment() -> void:
 	env.tonemap_mode        = Environment.TONE_MAPPER_ACES
 	env.tonemap_exposure    = 1.1
 	env.tonemap_white       = 6.0
-	# DOF suave
-	env.dof_blur_far_enabled   = true
-	env.dof_blur_far_distance  = 38.0
-	env.dof_blur_far_transition = 12.0
-	env.dof_blur_amount        = 0.05
-
 	var we := WorldEnvironment.new()
 	we.environment = env
 	add_child(we)
@@ -114,25 +108,21 @@ func _setup_environment() -> void:
 	sun.rotation_degrees = Vector3(-60.0, 20.0, 0.0)
 	sun.light_color      = Color(0.4, 0.45, 0.55, 1.0)
 	sun.light_energy     = 0.25
-	sun.shadow_enabled   = true
-	sun.shadow_blur      = 1.5
+	sun.shadow_enabled            = true
+	sun.directional_shadow_blur_regions = true
 	add_child(sun)
 
 func _build_all_rooms() -> void:
-	var rooms := [
-		[ 0.0,  16.0, 14.0, 14.0, C_ENTRADA,  L_ENTRADA,  "ENTRADA"       ],
-		[26.0,  22.0, 10.0,  8.0, C_VESTUARIO,L_ENTRADA,  "VESTUARIO"     ],
-		[28.0,   4.0, 16.0, 14.0, C_LAB,      L_LAB,      "LABORATORIO A" ],
-		[-28.0,  4.0, 16.0, 14.0, C_LAB,      L_LAB,      "LABORATORIO B" ],
-		[ 0.0, -20.0, 14.0, 16.0, C_CONTROL,  L_CONTROL,  "SALA CONTROL"  ],
-		[ 0.0, -60.0, 12.0, 12.0, C_SALIDA,   L_SALIDA,   "ZONA SALIDA"   ],
-		[30.0, -46.0, 18.0, 18.0, C_REACTOR,  L_REACTOR,  "NUCLEO REACTOR"],
-		[-30.0,-46.0, 16.0, 14.0, C_PELIGRO,  L_PELIGRO,  "HUB SEGURIDAD" ],
-		[30.0, -20.0, 14.0, 12.0, C_REACTOR,  L_REACTOR,  "ARCHIVO"       ],
-		[-30.0,-20.0, 12.0, 12.0, C_SECRETO,  L_SECRETO,  "CAMARA FRIA"   ],
-	]
-	for r : Array in rooms:
-		_build_room(r[0], r[1], r[2], r[3], r[4], r[5], r[6])
+	_build_room( 0.0,  16.0, 14.0, 14.0, C_ENTRADA,   L_ENTRADA,  "ENTRADA"       )
+	_build_room(26.0,  22.0, 10.0,  8.0, C_VESTUARIO,  L_ENTRADA,  "VESTUARIO"     )
+	_build_room(28.0,   4.0, 16.0, 14.0, C_LAB,        L_LAB,      "LABORATORIO A" )
+	_build_room(-28.0,  4.0, 16.0, 14.0, C_LAB,        L_LAB,      "LABORATORIO B" )
+	_build_room( 0.0, -20.0, 14.0, 16.0, C_CONTROL,    L_CONTROL,  "SALA CONTROL"  )
+	_build_room( 0.0, -60.0, 12.0, 12.0, C_SALIDA,     L_SALIDA,   "ZONA SALIDA"   )
+	_build_room(30.0, -46.0, 18.0, 18.0, C_REACTOR,    L_REACTOR,  "NUCLEO REACTOR")
+	_build_room(-30.0,-46.0, 16.0, 14.0, C_PELIGRO,    L_PELIGRO,  "HUB SEGURIDAD" )
+	_build_room(30.0, -20.0, 14.0, 12.0, C_REACTOR,    L_REACTOR,  "ARCHIVO"       )
+	_build_room(-30.0,-20.0, 12.0, 12.0, C_SECRETO,    L_SECRETO,  "CAMARA FRIA"   )
 
 func _build_room(cx: float, cz: float, rw: float, rd: float,
 		col: Color, lcol: Color, lbl: String) -> void:
@@ -341,20 +331,9 @@ func _build_atmospheric_details() -> void:
 		_flicker_timers.append(randf_range(1.0, Constants.FLICKER_INTERVAL_MAX))
 
 	# Manchas de humedad en paredes (cuadrados oscuros decorativos)
-	var stain_positions := [
-		[Vector3(-3.8, 1.5, 9.0), Vector3(0.4, 1.2, 0.06)],
-		[Vector3(4.0, 2.0, -12.0), Vector3(0.6, 0.8, 0.06)],
-		[Vector3(-7.0, 1.0, -28.0), Vector3(0.5, 1.5, 0.06)],
-	]
-	for st : Array in stain_positions:
-		var sm := MeshInstance3D.new()
-		var bm := BoxMesh.new(); bm.size = st[1] as Vector3
-		sm.mesh = bm; sm.position = st[0] as Vector3
-		var mat := StandardMaterial3D.new()
-		mat.albedo_color = Color(0.04, 0.04, 0.06, 1.0)
-		mat.roughness    = 0.95
-		sm.material_override = mat
-		add_child(sm)
+	_build_stain(Vector3(-3.8, 1.5,  9.0),  Vector3(0.4, 1.2, 0.06))
+	_build_stain(Vector3( 4.0, 2.0, -12.0), Vector3(0.6, 0.8, 0.06))
+	_build_stain(Vector3(-7.0, 1.0, -28.0), Vector3(0.5, 1.5, 0.06))
 
 func _process(delta: float) -> void:
 	# Parpadeo de luces de emergencia
@@ -369,3 +348,15 @@ func _process(delta: float) -> void:
 			else:
 				# Apagado: breve
 				_flicker_timers[i] = randf_range(0.05, 0.25)
+
+func _build_stain(pos: Vector3, size: Vector3) -> void:
+	var sm  := MeshInstance3D.new()
+	var bm  := BoxMesh.new()
+	bm.size  = size
+	sm.mesh  = bm
+	sm.position = pos
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.04, 0.04, 0.06, 1.0)
+	mat.roughness    = 0.95
+	sm.material_override = mat
+	add_child(sm)

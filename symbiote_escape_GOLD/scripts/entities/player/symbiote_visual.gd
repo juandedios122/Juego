@@ -310,7 +310,7 @@ func _animate_state(power_glow: float) -> void:
 
 func _animate_tentacles() -> void:
 	for i in _tentacle_meshes.size():
-		var t : MeshInstance3D = _tentacle_meshes[i]
+		var t : MeshInstance3D = _tentacle_meshes[i] as MeshInstance3D
 		var angle := float(i) / float(_tentacle_meshes.size()) * TAU
 		var wave  := sin(_t * 5.5 + float(i) * 1.1) * 0.45
 		var reach := 0.85 + sin(_t * 3.2 + float(i) * 0.7) * 0.32

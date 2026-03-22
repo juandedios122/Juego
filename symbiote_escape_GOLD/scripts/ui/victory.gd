@@ -151,8 +151,8 @@ func _process(delta: float) -> void:
 	# Partículas ascendentes
 	for r in _particles:
 		if not is_instance_valid(r): continue
-		var sp   : float = r.get_meta("speed", 40.0)
-		var drift: float = r.get_meta("drift", 0.0)
+		var sp   : float = float(r.get_meta("speed", 40.0))
+		var drift: float = float(r.get_meta("drift", 0.0))
 		r.position.y -= sp * delta
 		r.position.x += drift * delta
 		if r.position.y < -10.0:

@@ -39,7 +39,7 @@ func get_xp_to_next() -> int:
 		return 1
 	var thresholds : Array = Constants.LEVEL_XP
 	if current_level < thresholds.size():
-		return thresholds[current_level] - thresholds[current_level - 1]
+		return int(thresholds[current_level]) - int(thresholds[current_level - 1])
 	return 9999
 
 func is_skill_unlocked(skill_id: String) -> bool:
@@ -65,8 +65,8 @@ func get_unlock_level(skill_id: String) -> int:
 # ── Persistencia ─────────────────────────────────────────
 
 func _load() -> void:
-	current_level = SaveMgr.get_val("player_level", 1)
-	total_xp      = SaveMgr.get_val("player_total_xp", 0)
+	current_level = int(SaveMgr.get_val("player_level", 1))
+	total_xp      = int(SaveMgr.get_val("player_total_xp", 0))
 	xp_in_level   = total_xp - _xp_for_level(current_level)
 	xp_in_level   = maxi(0, xp_in_level)
 
@@ -77,4 +77,4 @@ func _save() -> void:
 func _xp_for_level(lv: int) -> int:
 	if lv <= 1: return 0
 	var thresholds : Array = Constants.LEVEL_XP
-	return thresholds[mini(lv - 1, thresholds.size() - 1)]
+	return int(thresholds[mini(lv - 1, thresholds.size() - 1)])

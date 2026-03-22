@@ -68,14 +68,14 @@ func _build() -> void:
 
 func _build_alarm_bar() -> void:
 	_alarm_bar = _rect(_root, Vector2(0,0), Vector2(1920,36), BG_DARK)
-	_alarm_line = _rect(_root, Vector2(0,34), Vector2(1920,2), ALARM_COLS[0])
-	_alarm_dot  = _rect(_root, Vector2(840,9), Vector2(14,14), ALARM_COLS[0])
-	_alarm_lbl  = _lbl(_root, Vector2(0,4), Vector2(1920,28), ALARM_LABELS[0],
-		14, ALARM_COLS[0], HORIZONTAL_ALIGNMENT_CENTER)
+	_alarm_line = _rect(_root, Vector2(0,34), Vector2(1920,2), ALARM_COLS[0] as Color)
+	_alarm_dot  = _rect(_root, Vector2(840,9), Vector2(14,14), ALARM_COLS[0] as Color)
+	_alarm_lbl  = _lbl(_root, Vector2(0,4), Vector2(1920,28), ALARM_LABELS[0] as String,
+		14, ALARM_COLS[0] as Color, HORIZONTAL_ALIGNMENT_CENTER)
 
 func _refresh_alarm_bar(level: int) -> void:
-	var col : Color = ALARM_COLS[clampi(level, 0, 3)]
-	_alarm_lbl.text = ALARM_LABELS[clampi(level, 0, 3)]
+	var col : Color = ALARM_COLS[clampi(level, 0, 3)] as Color
+	_alarm_lbl.text = ALARM_LABELS[clampi(level, 0, 3)] as String
 	_alarm_lbl.add_theme_color_override("font_color", col)
 	_alarm_dot.color = col
 	if _alarm_line: _alarm_line.color = col
@@ -134,7 +134,7 @@ func _build_skill_bar() -> void:
 	var bx := (1920 - total_w) / 2; var by := 964
 	_rect(_root, Vector2(bx-8,by-8), Vector2(total_w+16,SH+16), BG_DARK)
 	for i in SKILL_IDS.size():
-		var sid := SKILL_IDS[i]; var key := SKILL_KEYS[i]; var col := SKILL_COLS[i]
+		var sid : String = SKILL_IDS[i] as String; var key : String = SKILL_KEYS[i] as String; var col : Color = SKILL_COLS[i] as Color
 		var x   := bx + i * (SW + GAP)
 		var slot_bg := _rect(_root, Vector2(x,by), Vector2(SW,SH), BG_PANEL)
 		var accent  := _rect(_root, Vector2(x,by), Vector2(SW,3), col * 0.5)
@@ -153,8 +153,8 @@ func _build_passives_panel() -> void:
 	var PCOLS := {"VELOCIDAD":Color(0.3,0.9,1.0),"SUPER_SALTO":Color(0.5,1.0,0.5),
 		"FUERZA":Color(1.0,0.5,0.3),"SIGILO":Color(0.7,0.5,1.0),"SENTIDO":Color(1.0,0.9,0.3)}
 	for i in ALL_PASSIVES.size():
-		var name := ALL_PASSIVES[i]; var pcol : Color = PCOLS.get(name, COL_TEXT)
-		var ry   := 70.0 + i * 30.0
+		var name : String = ALL_PASSIVES[i] as String; var pcol : Color = PCOLS.get(name, COL_TEXT) as Color
+		var ry   : float  = 70.0 + i * 30.0
 		var row_bg := _rect(_root, Vector2(PX-4,ry), Vector2(244,24), BG_PANEL)
 		_rect(_root, Vector2(PX-4,ry), Vector2(2,24), pcol)
 		var timer_l := _lbl(_root, Vector2(PX+4,ry+4), Vector2(234,18), "● " + name, 12, pcol, HORIZONTAL_ALIGNMENT_RIGHT)
@@ -276,16 +276,16 @@ func _on_passive_lost(name: String) -> void:
 func _on_cooldown_updated(sid: String, remaining: float, total: float) -> void:
 	if not _slots.has(sid): return
 	var slot : Dictionary = _slots[sid]
-	var overlay : ColorRect = slot["overlay"]
-	var cd_lbl  : Label     = slot["cd_l"]
-	var accent  : ColorRect = slot["accent"]
+	var overlay : ColorRect = slot["overlay"] as ColorRect
+	var cd_lbl  : Label     = slot["cd_l"] as Label
+	var accent  : ColorRect = slot["accent"] as ColorRect
 	var frac    := clampf(remaining / maxf(total, 0.001), 0.0, 1.0)
 	overlay.size.y = 100.0 * frac
 	if remaining <= 0.05:
 		cd_lbl.text = "LISTO"; cd_lbl.add_theme_color_override("font_color", Color(0.2,1.0,0.4))
 		var tw := create_tween()
-		tw.tween_property(accent, "color", SKILL_COLS[SKILL_IDS.find(sid)], 0.08)
-		tw.tween_property(accent, "color", SKILL_COLS[SKILL_IDS.find(sid)] * 0.5, 0.5)
+		tw.tween_property(accent, "color", SKILL_COLS[SKILL_IDS.find(sid)] as Color, 0.08)
+		tw.tween_property(accent, "color", (SKILL_COLS[SKILL_IDS.find(sid)] as Color) * 0.5, 0.5)
 	else:
 		cd_lbl.text = "%.1fs" % remaining
 		cd_lbl.add_theme_color_override("font_color", Color(1.0,0.55,0.15))
@@ -300,14 +300,14 @@ func _process(delta: float) -> void:
 		var row : Dictionary = _passive_rows[name]
 		if not (row["timer"] as Label).visible: continue
 		var rem := _ability_sys.get_remaining(name) if _has_ability_sys_method else -1.0
-		var timer_lbl : Label = row["timer"]
+		var timer_lbl : Label = row["timer"] as Label
 		if rem < 0.0: timer_lbl.text = "● " + name + "  ∞"
 		elif rem > 0.0: timer_lbl.text = "● " + name + "  %ds" % int(rem + 0.9)
 		else: _on_passive_lost(name)
 
 func _refresh_skill_locks() -> void:
 	for i in SKILL_IDS.size():
-		var sid := SKILL_IDS[i]
+		var sid : String = SKILL_IDS[i] as String
 		if not _slots.has(sid): continue
 		var slot : Dictionary = _slots[sid]
 		var unlocked := ProgressionMgr.is_skill_unlocked(sid)
@@ -317,7 +317,7 @@ func _refresh_skill_locks() -> void:
 		(slot["lock_l"] as Label).visible = not unlocked
 		(slot["overlay"] as ColorRect).visible = unlocked
 		(slot["bg"] as ColorRect).color = BG_PANEL if unlocked else Color(0.02,0.02,0.03,0.9)
-		(slot["accent"] as ColorRect).color = SKILL_COLS[i] if unlocked else COL_MUTED * 0.3
+		(slot["accent"] as ColorRect).color = SKILL_COLS[i] as Color if unlocked else COL_MUTED * 0.3
 
 func _show_level_notif(level: int) -> void:
 	var lbl := _lbl(_root, Vector2(760,430), Vector2(400,72), "¡ NIVEL %d !", 58, COL_XP, HORIZONTAL_ALIGNMENT_CENTER)

@@ -62,7 +62,8 @@ func tick(delta: float, pressing: bool) -> void:
 
 	if progress >= 1.0:
 		var t     := target
-		var etype : String = t.get("enemy_type") if t.get("enemy_type") != null else "worker"
+		var raw_type = t.get("enemy_type")
+		var etype : String = (raw_type as String) if raw_type != null else "worker"
 		_cancel()
 		absorb_completed.emit(t, etype)
 

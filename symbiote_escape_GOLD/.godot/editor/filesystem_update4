@@ -1,1 +1,6 @@
 res://scripts/core/audio_manager.gd
+res://scripts/core/alarm_system.gd
+res://scripts/ui/main_menu.gd
+res://scripts/core/save_manager.gd
+res://scripts/systems/level_manager.gd
+res://scripts/systems/progression_manager.gd

@@ -8,7 +8,7 @@ var _cfg := ConfigFile.new()
 
 func _ready() -> void:
 	_cfg.load(SAVE_PATH)
-	var vol: float = get_val("master_vol", 1.0)
+	var vol: float = float(get_val("master_vol", 1.0))
 	AudioServer.set_bus_volume_db(0, linear_to_db(vol))
 
 func get_val(key: String, default: Variant = null) -> Variant:

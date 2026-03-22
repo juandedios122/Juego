@@ -125,61 +125,47 @@ func _spawn_enemies() -> void:
 	var ws := load(ScenePaths.WORKER)   as PackedScene
 	var ss := load(ScenePaths.SECURITY) as PackedScene
 
-	# ── Trabajadores: [spawn_pos, ruta] ──────────────────
-	var worker_data := [
-		# ENTRADA (2 trabajadores)
-		[Vector3( 3, 1.5,  16), "entrada"],
-		[Vector3(-3, 1.5,  14), "entrada"],
-		# VESTUARIO (1 trabajador)
-		[Vector3(25, 1.5,  22), "vestuario"],
-		# LAB A (3 trabajadores)
-		[Vector3(28, 1.5,   6), "lab_a"],
-		[Vector3(32, 1.5,   2), "lab_a"],
-		[Vector3(24, 1.5,   2), "lab_a"],
-		# LAB B (3 trabajadores)
-		[Vector3(-28, 1.5,  6), "lab_b"],
-		[Vector3(-32, 1.5,  2), "lab_b"],
-		[Vector3(-24, 1.5,  2), "lab_b"],
-		# SALA CONTROL (3 trabajadores — zona media)
-		[Vector3( 0, 1.5, -20), "control"],
-		[Vector3( 3, 1.5, -16), "control"],
-		[Vector3(-3, 1.5, -24), "control"],
-		# ARCHIVO (1 trabajador, zona bloqueada)
-		[Vector3(30, 1.5, -20), "archivo"],
-		# CÁMARA FRÍA (1 trabajador secreto)
-		[Vector3(-30, 1.5, -20), "camara_fria"],
-		# ZONA SALIDA (1 trabajador)
-		[Vector3( 0, 1.5, -60), "salida"],
-	]
-	for d : Array in worker_data:
-		if ws:
-			var w := ws.instantiate() as Node3D
-			w.position = d[0]
-			_enemies.add_child(w)
-			if w.has_method("set_patrol_waypoints") and PATROL_ROUTES.has(d[1]):
-				w.set_patrol_waypoints(PATROL_ROUTES[d[1]])
+	# ── Trabajadores ──────────────────────────────────────
+	_spawn_worker(ws, Vector3( 3, 1.5,  16), "entrada")
+	_spawn_worker(ws, Vector3(-3, 1.5,  14), "entrada")
+	_spawn_worker(ws, Vector3(25, 1.5,  22), "vestuario")
+	_spawn_worker(ws, Vector3(28, 1.5,   6), "lab_a")
+	_spawn_worker(ws, Vector3(32, 1.5,   2), "lab_a")
+	_spawn_worker(ws, Vector3(24, 1.5,   2), "lab_a")
+	_spawn_worker(ws, Vector3(-28, 1.5,  6), "lab_b")
+	_spawn_worker(ws, Vector3(-32, 1.5,  2), "lab_b")
+	_spawn_worker(ws, Vector3(-24, 1.5,  2), "lab_b")
+	_spawn_worker(ws, Vector3( 0, 1.5, -20), "control")
+	_spawn_worker(ws, Vector3( 3, 1.5, -16), "control")
+	_spawn_worker(ws, Vector3(-3, 1.5, -24), "control")
+	_spawn_worker(ws, Vector3(30, 1.5, -20), "archivo")
+	_spawn_worker(ws, Vector3(-30, 1.5, -20), "camara_fria")
+	_spawn_worker(ws, Vector3( 0, 1.5, -60), "salida")
 
-	# ── Guardias: [spawn_pos, ruta] ──────────────────────
-	# Total: 7 guardias — densidad mayor en zonas de peligro
-	var guard_data := [
-		# Pasillos centrales (2 guardias)
-		[Vector3( 0, 1.5,   2), "corredor_central_sur"],
-		[Vector3( 0, 1.5, -38), "corredor_central_norte"],
-		# Flancos (2 guardias)
-		[Vector3(28, 1.5,  -8), "corredor_este"],
-		[Vector3(-28, 1.5, -8), "corredor_oeste"],
-		# Zona norte — alta tensión (3 guardias)
-		[Vector3(12, 1.5, -46), "corredor_norte_e"],
-		[Vector3(-12, 1.5,-46), "corredor_norte_o"],
-		[Vector3(30, 1.5, -46), "reactor"],   # guardia élite en reactor
-	]
-	for d : Array in guard_data:
-		if ss:
-			var s := ss.instantiate() as Node3D
-			s.position = d[0]
-			_enemies.add_child(s)
-			if s.has_method("set_patrol_waypoints") and PATROL_ROUTES.has(d[1]):
-				s.set_patrol_waypoints(PATROL_ROUTES[d[1]])
+	# ── Guardias ──────────────────────────────────────────
+	_spawn_guard(ss, Vector3( 0, 1.5,   2), "corredor_central_sur")
+	_spawn_guard(ss, Vector3( 0, 1.5, -38), "corredor_central_norte")
+	_spawn_guard(ss, Vector3(28, 1.5,  -8), "corredor_este")
+	_spawn_guard(ss, Vector3(-28, 1.5, -8), "corredor_oeste")
+	_spawn_guard(ss, Vector3(12, 1.5, -46), "corredor_norte_e")
+	_spawn_guard(ss, Vector3(-12, 1.5,-46), "corredor_norte_o")
+	_spawn_guard(ss, Vector3(30, 1.5, -46), "reactor")
+
+func _spawn_worker(scene: PackedScene, pos: Vector3, route: String) -> void:
+	if scene == null: return
+	var w := scene.instantiate() as Node3D
+	w.position = pos
+	_enemies.add_child(w)
+	if w.has_method("set_patrol_waypoints") and PATROL_ROUTES.has(route):
+		w.set_patrol_waypoints(PATROL_ROUTES[route] as Array)
+
+func _spawn_guard(scene: PackedScene, pos: Vector3, route: String) -> void:
+	if scene == null: return
+	var s := scene.instantiate() as Node3D
+	s.position = pos
+	_enemies.add_child(s)
+	if s.has_method("set_patrol_waypoints") and PATROL_ROUTES.has(route):
+		s.set_patrol_waypoints(PATROL_ROUTES[route] as Array)
 
 func _spawn_pause_menu() -> void:
 	var pm := load(ScenePaths.PAUSE_MENU) as PackedScene
